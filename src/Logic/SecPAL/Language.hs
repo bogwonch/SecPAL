@@ -25,7 +25,7 @@ data VerbPhrase = Predicate { predicate :: String, args :: [E] }
                 deriving (Eq)
 
 instance Show VerbPhrase where
-  show Predicate{predicate=p, args=as} = p ++ intercalate ", " (map show as)
+  show Predicate{predicate=p, args=as} = p ++ "(" ++ intercalate ", " (map show as) ++ ")"
   show CanSay{delegation=d, what=w} = "can say"++show d++" "++show w
   
 data Fact = Fact { subject :: E, verb :: VerbPhrase }
@@ -49,7 +49,7 @@ data Assertion = Assertion { who :: E, says :: Claim }
                deriving (Eq)
 
 instance Show Assertion where
-  show Assertion{who=w, says=s} = show w++" says "++show s
+  show Assertion{who=w, says=s} = show w++" says "++show s++"."
 
 data AC = AC [Assertion]
         deriving (Eq, Show)
