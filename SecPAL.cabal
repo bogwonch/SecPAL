@@ -52,6 +52,7 @@ executable SecPAL
                     Logic.SecPAL.Language
                     Logic.SecPAL.Named
                     Logic.SecPAL.Vars
+                    Logic.SecPAL.Substitutions
 
   -- Other library packages from which modules are imported.
   build-depends:    base ==4.6.*

@@ -27,6 +27,7 @@ data VerbPhrase = Predicate { predicate :: String, args :: [E] }
 instance Show VerbPhrase where
   show Predicate{predicate=p, args=as} = p ++ "(" ++ intercalate ", " (map show as) ++ ")"
   show CanSay{delegation=d, what=w} = "can say"++show d++" "++show w
+  show CanActAs{whom=w} = "can act as "++show w
   
 data Fact = Fact { subject :: E, verb :: VerbPhrase }
           deriving (Eq)
