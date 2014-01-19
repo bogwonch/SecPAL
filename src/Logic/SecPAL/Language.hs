@@ -74,6 +74,7 @@ data C = Boolean Bool
        | Equals Ec Ec
        | Not C
        | Conj C C
+       | Number Int
        deriving (Eq)
 
 instance Show C where
@@ -83,5 +84,6 @@ instance Show C where
   show (Not (Equals x y)) = show x++"≠"++show y
   show (Not x) = "¬ "++show x
   show (Conj x y) = show x++" ⋀ "++show y
+  show (Number n) = show n
 
 
