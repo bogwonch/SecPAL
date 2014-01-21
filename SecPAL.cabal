@@ -46,6 +46,7 @@ executable SecPAL
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
   
+  build-depends:    parsec
   -- Modules included in this executable, other than Main.
   other-modules:    Logic.SecPAL.AssertionSafety
                     Logic.SecPAL.Language
@@ -54,6 +55,7 @@ executable SecPAL
                     Logic.SecPAL.Substitutions
                     Logic.SecPAL.Context
                     Logic.SecPAL.Evaluable
+                    Logic.SecPAL.Parser
 
   -- Other library packages from which modules are imported.
   build-depends:    base >= 4.5

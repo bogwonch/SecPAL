@@ -68,7 +68,7 @@ instance Show F where
 
 
 data Ec = Entity E
-        | Apply F [E]
+        | Apply F [Ec]
         | Value Value
         deriving (Eq)
 
