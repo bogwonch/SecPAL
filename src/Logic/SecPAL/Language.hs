@@ -43,7 +43,8 @@ instance Show Claim where
     case (fs, c) of
       ([], Boolean True) -> show f
       (_,  Boolean True) -> show f++" if "++intercalate ", " (map show fs)
-      otherwise          -> show f++" if "++intercalate ", " (map show fs)++", "++show c
+      ([], c)            -> show f++"; "++show c
+      otherwise          -> show f++" if "++intercalate ", " (map show fs)++"; "++show c
 
 data Assertion = Assertion { who :: E, says :: Claim }
                deriving (Eq)
