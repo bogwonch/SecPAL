@@ -1,0 +1,140 @@
+digraph SecPAL {
+    rankdir=LR;
+    concentrate=true;
+    overlap=false;
+    splines=true;
+    compound=true;  
+
+    String [shape=diamond];
+    Int [shape=diamond];
+    Float [shape=diamond];
+    Bool [shape=diamond];
+
+    AC [shape=box];
+
+    E [shape=point, size=0];
+    subgraph cluster_e {
+      label="E";
+      e [style=invisible, size=0];
+      subgraph cluster_variable {
+        label="Variable";
+        varName;
+      }
+      subgraph cluster_constant {
+        label="Constant";
+        constName;
+      }
+    }
+    E -> e [lhead=cluster_e];
+
+    D [shape=point, size=0];
+    subgraph cluster_d {
+      label="D";
+      Zero [shape=box];
+      Infinity [shape=box];
+    }
+    D -> Zero [lhead=cluster_d];
+
+    VerbPhrase [shape=point, size=0];
+    subgraph cluster_verbphrase {
+      label="VerbPhrase";
+      vp [style=invisible, size=0];
+      subgraph cluster_predicate {
+        label="Predicate";
+        predicate;
+        args;
+      }
+
+      subgraph cluster_cansay {
+        label="CanSay";
+        delegation;
+        what;
+      }
+    }
+    VerbPhrase -> vp [lhead=cluster_verbphrase];
+    
+    Fact [shape=point, size=0];
+    subgraph cluster_fact {
+      label="Fact";
+      subject;
+      verb;
+    }
+    Fact -> subject [lhead=cluster_fact];
+
+    Claim [shape=point, size=0];
+    subgraph cluster_claim {
+      label="Claim";
+      fact;
+      conditions;
+      constraint;
+    }
+    Claim -> fact [lhead=cluster_claim];
+
+    Assertion [shape=point, size=0];
+    subgraph cluster_assertion {
+      label="Assertion";
+      who;
+      says;
+    }
+    Assertion -> who [lhead=cluster_assertion];
+
+    F [shape=point, size=0];
+    subgraph cluster_f {
+      label="F";
+      fName;
+    }
+    F->fName [lhead=cluster_f];
+
+    C [shape=point, size=0];
+    subgraph cluster_c {
+      label="C";
+      Boolean [shape=box];
+      Conj [shape=box];
+      Not [shape=box];
+      Equals [shape=box];
+    }
+    C->Boolean [lhead=cluster_c];
+
+    Ec [shape=point, size=0];
+    subgraph cluster_ec {
+      label="Ec";
+
+      subgraph cluster_value {
+        label="Value";
+        Int1 [label="Int'", shape=box];
+        Float1 [label="Float'", shape=box];
+        String1 [label="String'", shape=box];
+      }
+
+      Apply [shape=box];
+      Entity [shape=box];
+    }
+    Ec -> Apply [lhead=cluster_ec];
+
+
+    AC -> Assertion [arrowhead=none];
+    Apply -> E [arrowhead=none];
+    Apply -> F [arrowhead=none];
+    Boolean -> Bool;
+    Conj -> C [arrowhead=none, constraint=false];
+    Entity -> E [arrowhead=none];
+    Equals -> Ec [arrowhead=none];
+    Not -> C [arrowhead=none, constraint=false];
+    args -> E [arrowhead=none];
+    conditions->Fact [arrowhead=none];
+    constName -> String;
+    constraint->C [arrowhead=none];
+    delegation->D [arrowhead=none];
+    fName -> String;
+    Float1 -> Float;
+    String1 -> String;
+    Int1 -> Int;
+    fact->Fact [arrowhead=none];
+    predicate->String;
+    says->Claim [arrowhead=none];
+    subject->E [arrowhead=none];
+    varName -> String;
+    verb->VerbPhrase [arrowhead=none];
+    what->Fact [arrowhead=none];
+    who->E [arrowhead=none];
+}
