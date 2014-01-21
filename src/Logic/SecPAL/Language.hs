@@ -38,13 +38,12 @@ instance Show Fact where
 data Claim = Claim { fact :: Fact, conditions :: [Fact], constraint :: C }
            deriving (Eq)
 
-instance Show Claim where
-  show Claim{fact=f, conditions=[], constraint=Boolean True} = 
-    show f
-  show Claim{fact=f, conditions=fs, constraint=Boolean True} = 
-    show f++" if "++intercalate ", " (map show fs)
+instance Show Claim where    
   show Claim{fact=f, conditions=fs, constraint=c} = 
-    show f++" if "++intercalate ", " (map show fs)++", "++show c
+    case (fs, c) of
+      ([], Boolean True) -> show f
+      (_,  Boolean True) -> show f++" if "++intercalate ", " (map show fs)
+      otherwise          -> show f++" if "++intercalate ", " (map show fs)++", "++show c
 
 data Assertion = Assertion { who :: E, says :: Claim }
                deriving (Eq)
@@ -53,7 +52,13 @@ instance Show Assertion where
   show Assertion{who=w, says=s} = show w++" says "++show s++"."
 
 data AC = AC [Assertion]
-        deriving (Eq, Show)
+        deriving (Eq)
+
+instance Show AC where
+  show (AC acs) = "{ " ++ intercalate ", " (map show acs) ++ " }"
+
+acs :: AC -> [Assertion]
+acs (AC as) = as
 
 data F = F { fName :: String }
        deriving (Eq)
@@ -64,17 +69,18 @@ instance Show F where
 
 data Ec = Entity E
         | Apply F [E]
+        | Value Value
         deriving (Eq)
 
 instance Show Ec where
   show (Entity e) = show e
   show (Apply f xs) = show f++"("++intercalate ", " (map show xs)++")"
+  show (Value v) = show v
 
 data C = Boolean Bool
        | Equals Ec Ec
        | Not C
        | Conj C C
-       | Number Int
        deriving (Eq)
 
 instance Show C where
@@ -84,6 +90,16 @@ instance Show C where
   show (Not (Equals x y)) = show x++"≠"++show y
   show (Not x) = "¬ "++show x
   show (Conj x y) = show x++" ⋀ "++show y
-  show (Number n) = show n
+
+data Value 
+    = Int' Int
+    | Float' Float
+    | String' String
+  deriving (Eq)
+
+instance Show Value where
+    show (Int' x) = show x
+    show (Float' x) = show x
+    show (String' x) = show x
 
 

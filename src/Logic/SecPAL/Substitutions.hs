@@ -47,6 +47,7 @@ instance Substitutive AC where
 instance Substitutive Ec where
   (Entity e)   `sub` θ = Entity $ e `sub` θ
   (Apply f es) `sub` θ = Apply f (map (`sub` θ) es)
+  v@(Value _)  `sub` θ = v
 
 instance Substitutive C where
   (Boolean b) `sub` θ  = Boolean b

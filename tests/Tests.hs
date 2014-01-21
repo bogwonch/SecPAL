@@ -1,6 +1,7 @@
 module Main where
 
 import Tests.AssertionSafety
+import Tests.Evaluation
 import Tests.TestResults
 import Tests.Testable
 import System.Console.ANSI
@@ -40,3 +41,5 @@ main = do
   runTests "AssertionSafety/safe" testSafe
   runTests "AssertionSafety/unsafe" testUnsafe
   runTests "AssertionSafety/ESSoS" testESSoS
+  runTests "Evaluation/Truths" testEvaluationTruths
+  runTests "Evaluation/Falsehoods" testEvaluationFalsehoods

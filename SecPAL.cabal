@@ -41,7 +41,6 @@ build-type:          Simple
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
-
 executable SecPAL
   -- .hs or .lhs file containing the Main module.
   main-is:          SecPAL.hs
@@ -53,6 +52,8 @@ executable SecPAL
                     Logic.SecPAL.Named
                     Logic.SecPAL.Vars
                     Logic.SecPAL.Substitutions
+                    Logic.SecPAL.Context
+                    Logic.SecPAL.Evaluable
 
   -- Other library packages from which modules are imported.
   build-depends:    base ==4.6.*
@@ -66,4 +67,5 @@ executable Tests
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
+                    Tests.Evaluation
 
