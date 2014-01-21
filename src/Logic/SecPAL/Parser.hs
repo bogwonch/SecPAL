@@ -4,12 +4,13 @@ module Logic.SecPAL.Parser where
 import Logic.SecPAL.Language
 import Text.Parsec
 import Control.Applicative ((*>), (<*>), (<*))
+import Control.Monad 
 import Data.Maybe
 
 import Debug.Trace
 
 pWs = spaces *> optional eof
-
+pListSep = spaces *> char ',' <* spaces
 pTokenChar = alphaNum <|> oneOf "-_~" <?> "token character"
 
 
@@ -18,12 +19,12 @@ pE = pVariable <|> pConstant <?> "entity"
 pVariable = do
   n <- lower
   ns <- many pTokenChar
-  return $ Variable{varName=n:ns}
+  return Variable{varName=n:ns}
 
 pConstant = do
   n <- upper
   ns <- many pTokenChar
-  return $ Constant{constName=n:ns}
+  return Constant{constName=n:ns}
 
 
 pD = pZero <|> pInf <?> "delegation level"
@@ -37,13 +38,16 @@ pInf = do
   return Infinity
 
 
-pVerbPhrase = try pPredicate <|> pCanSay <?> "verb phrase"
+pVerbPhrase = try pCanSay <|> pPredicate <?> "verb phrase"
 
 pPredicate = do
   pred <- many1 pTokenChar
   spaces
-  args <- maybeToList $ optionMaybe (try pPredicateArg)
-  return $ Predicate{ predicate=pred, args=args }
+  args <- optionMaybe (try pPredicateArg)
+  let args' = case args of
+                (Just es) -> es
+                Nothing -> []
+  return Predicate{ predicate=pred, args=args' }
 
 pPredicateArg = do
   char '('
@@ -56,14 +60,16 @@ pCanSay = do
   spaces
   d <- pD
   spaces
-  fact <- pFact
-  return $ CanSay{ delegation=d, what=fact }
+  fact <- pFact -- No nested says statements (probs shouldnt do this but parsing is easier)
+  return CanSay{ delegation=d, what=fact }
+
 
 pFact = do
   subject <- pE
   spaces
   verb <- pVerbPhrase
   return Fact{ subject=subject, verb=verb }
+
 
 pEc = try pApply <|> pEntity <|> pEValue <?> "constraint entity"
 
@@ -72,14 +78,14 @@ pApply = do
   spaces
   char '('
   spaces
-  args <- pEc `sepBy` (try $ spaces *> char ',' <* spaces)
+  args <- pEc `sepBy` try pListSep
   spaces
   char ')'
   return $ Apply (F name) args
 
-pEntity = pE >>= return . Entity
+pEntity = liftM Entity pE
 
-pEValue = pValue >>= return . Value
+pEValue = liftM Value pValue
 
 
 pC = try pConj <|> pC' <?> "constraint"
