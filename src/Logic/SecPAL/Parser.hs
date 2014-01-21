@@ -80,14 +80,12 @@ pClaim = do
 pClaimConditional = do
   string "if"
   spaces
-  conds <- pFact `sepBy1` pListSep
-  return conds
+  pFact `sepBy1` pListSep
 
 pClaimConstraint = do
   char ';' -- Yeah not strictly SecPAL but it makes the parsing easier
   spaces
-  c <- pC
-  return c
+  pC
 
 
 pAssertion = do
