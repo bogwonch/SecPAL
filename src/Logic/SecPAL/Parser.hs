@@ -4,6 +4,7 @@ module Logic.SecPAL.Parser where
 import Logic.SecPAL.Language
 import Text.Parsec
 import Control.Applicative ((*>), (<*>), (<*))
+import Data.Maybe
 
 import Debug.Trace
 
@@ -35,6 +36,34 @@ pInf = do
   string "inf"
   return Infinity
 
+
+pVerbPhrase = try pPredicate <|> pCanSay <?> "verb phrase"
+
+pPredicate = do
+  pred <- many1 pTokenChar
+  spaces
+  args <- maybeToList $ optionMaybe (try pPredicateArg)
+  return $ Predicate{ predicate=pred, args=args }
+
+pPredicateArg = do
+  char '('
+  args <- pE `sepBy` (spaces *> char ',' <* spaces)
+  char ')'
+  return args
+
+pCanSay = do
+  string "can-say"
+  spaces
+  d <- pD
+  spaces
+  fact <- pFact
+  return $ CanSay{ delegation=d, what=fact }
+
+pFact = do
+  subject <- pE
+  spaces
+  verb <- pVerbPhrase
+  return Fact{ subject=subject, verb=verb }
 
 pEc = try pApply <|> pEntity <|> pEValue <?> "constraint entity"
 
