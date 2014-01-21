@@ -16,7 +16,7 @@ data D = Zero
        deriving (Eq)
 
 instance Show D where
-  show Zero = "𝟶"
+  show Zero = "0"
   show Infinity = "∞"
 
 data VerbPhrase = Predicate { predicate :: String, args :: [E] }
