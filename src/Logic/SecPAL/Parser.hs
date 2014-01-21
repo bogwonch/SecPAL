@@ -53,7 +53,7 @@ pEntity = pE >>= return . Entity
 pEValue = pValue >>= return . Value
 
 
-pC = try pConj <|> pC <?> "constraint"
+pC = try pConj <|> pC' <?> "constraint"
 pC' = pBoolean <|> pNot <|> pEquals <?> "constraint"
 
 pBoolean = pTrue <|> pFalse <?> "boolean"
@@ -76,7 +76,7 @@ pNot = do
 pConj = do
   a <- pC'
   spaces *> string "," <* spaces
-  b <- pC 
+  b <- pC
   return $ Conj a b
 
 
