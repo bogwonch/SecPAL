@@ -35,6 +35,7 @@ C~ ::= <Equals> | <Not> | <Boolean>
 
 Boolean ::= 'True' | 'False'
 Not ::= '!' <C~>
+Equals ::= Ec '=' Ec
 Conj ::= <C~> ',' <C>
 
 Value ::= <Float> | <Int> | <String>

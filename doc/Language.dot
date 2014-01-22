@@ -1,5 +1,5 @@
 digraph SecPAL {
-    rankdir=LR;
+    //rankdir=LR;
     concentrate=true;
     overlap=false;
     splines=true;
