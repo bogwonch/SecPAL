@@ -1,0 +1,51 @@
+
+E ::= Variable | Constant
+
+Variable ::= <Lower> <TokenChar>*
+Constant ::= <Upper> <TokenChar>*
+
+D ::= <Zero> | <Inf>
+Zero ::= '0'
+Inf ::= 'inf'
+
+VerbPhrase ::= <CanSay> | <Predicate>
+
+Predicate ::= <TokenChar>+ <PredicateArg>?
+PredicateArg ::= '(' ( <E> ( ',' <E> )* )? ')'
+
+CanSay ::= 'can-say' <D> <Fact>
+
+Fact ::= <E> <VerbPhrase>
+
+Claim ::= <Fact> <ClaimConditional>? <ClaimConstraint>?
+ClaimConditional ::= 'if' <Fact> ( ',' <Fact>)*
+ClaimConstraint ::= ';' <C>
+
+Assertion ::= <E> 'says' <Claim> '.'
+
+AC ::= <Assertion>*
+
+Ec ::= <Apply> | <Entity> | <Value>
+
+Apply ::= <TokenChar>+ '(' (<Ec> (',' <Ec>)*)? ')'
+Entity ::= <E>
+
+C ::= <Conj> | <C~>
+C~ ::= <Equals> | <Not> | <Boolean>
+
+Boolean ::= 'True' | 'False'
+Not ::= '!' <C~>
+Conj ::= <C~> ',' <C>
+
+Value ::= <Float> | <Int> | <String>
+Int ::= <Hex> | <Dec>
+
+Dec ::= <Digit>+
+Hex ::= '0' ('x' | 'X') <HexDigit>+
+
+Float ::= <Digit>+ '.' <Digit>+
+
+String ::= '"' <AnyChar> '"'
+
+
+
