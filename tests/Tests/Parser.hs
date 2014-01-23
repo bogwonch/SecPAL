@@ -56,6 +56,7 @@ testParser = [ testPEVar
              , testPEc13
              , testPEc14
              , testPEc15
+             , testPEc16
              , testPC0
              , testPC1
              ]
@@ -112,7 +113,8 @@ spPEc11 = Apply (F "is-a-cylon") [spPEc1]
 spPEc12 = Apply (F "is-a-cylon") [spPEc0, spPEc1]
 spPEc13 = Apply (F "is-a-cylon") [spPEc4, spPEc6]
 spPEc14 = Apply (F "is-a-cylon") [spPEc9]
-spPEc15 = Apply (F "is-a-cylon") [spPEc9]
+spPEc15 = Apply (F "is-a-cylon") [spPEc10]
+spPEc16 = Apply (F "is-a-cylon") [spPEc15]
 
 testPEc0 = pT pEc spPEc0
 testPEc1 = pT pEc spPEc1
@@ -130,6 +132,7 @@ testPEc12 = pT pEc spPEc12
 testPEc13 = pT pEc spPEc13
 testPEc14 = pT pEc spPEc14
 testPEc15 = pT pEc spPEc15
+testPEc16 = pT pEc spPEc16
 
 spPValue0 = Int' 42
 spPValue1 = Int' (negate 13)
@@ -146,7 +149,6 @@ testPValue3 = pT pValue spPValue3
 testPValue4 = pT pValue spPValue4
 testPValue5 = pT pValue spPValue5
 testPValue6 = pT pValue spPValue6
-
 
 spPC0 = Boolean True
 spPC1 = Boolean False
