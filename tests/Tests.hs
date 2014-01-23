@@ -5,7 +5,9 @@ import Tests.Evaluation
 import Tests.TestResults
 import Tests.Parser
 import Tests.Testable
+import Tests.ArbitraryParser
 import System.Console.ANSI
+import Test.QuickCheck
 import Data.Function
 
 cTitle = setSGRCode [ SetColor Foreground Vivid Black]
@@ -45,3 +47,13 @@ main = do
   runTests "Evaluation/Truths" testEvaluationTruths
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
   runTests "Parser/All" testParser
+
+  quickCheckResult propParsableE
+  quickCheck propParsableD
+  quickCheck propParsableVerbPhrase
+  quickCheck propParsableFact
+  quickCheck propParsableClaim
+  quickCheck propParsableAssertion
+  quickCheck propParsableEc
+  quickCheck propParsableC
+  quickCheck propParsableValue

@@ -66,10 +66,12 @@ executable Tests
   --type:             exitcode-stdio-1.0
   build-depends:    base >= 4.5,
                     ansi-terminal,
-                    parsec
+                    parsec,
+                    QuickCheck
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
                     Tests.Evaluation
                     Tests.Parser
+                    Tests.ArbitraryParser
 

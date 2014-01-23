@@ -8,8 +8,8 @@ data E = Variable { varName :: String }
        deriving (Eq)
 
 instance Show E where
-  show (Variable n) = map toLower n
-  show (Constant (n:ns)) = toTitle n : ns
+  show (Variable n) = n
+  show (Constant (n:ns)) = (n:ns)
 
 data D = Zero
        | Infinity
@@ -106,5 +106,4 @@ instance Show Value where
     show (Int' x) = show x
     show (Float' x) = show x
     show (String' x) = show x
-
 
