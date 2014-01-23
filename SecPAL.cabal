@@ -65,9 +65,11 @@ executable Tests
   hs-source-dirs:   tests, src
   --type:             exitcode-stdio-1.0
   build-depends:    base >= 4.5,
-                    ansi-terminal
+                    ansi-terminal,
+                    parsec
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
                     Tests.Evaluation
+                    Tests.Parser
 

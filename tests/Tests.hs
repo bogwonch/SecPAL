@@ -3,6 +3,7 @@ module Main where
 import Tests.AssertionSafety
 import Tests.Evaluation
 import Tests.TestResults
+import Tests.Parser
 import Tests.Testable
 import System.Console.ANSI
 import Data.Function
@@ -19,9 +20,9 @@ runTests name ts =
   let passes = length [ t | t <- ts, result t == TestPassed ]
       fails  = length [ t | t <- ts, result t /= TestPassed ]
   in do
-    putStr $  cTitle ++ "✱  "++cNormal
+    putStr $  cTitle ++ "✱ "++cNormal
     showScore passes fails
-    putStrLn $ " "++name
+    putStrLn $ ' ':name
     mapM_ print ts
     putStrLn ""
 
@@ -43,3 +44,4 @@ main = do
   runTests "AssertionSafety/ESSoS" testESSoS
   runTests "Evaluation/Truths" testEvaluationTruths
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
+  runTests "Parser/All" testParser

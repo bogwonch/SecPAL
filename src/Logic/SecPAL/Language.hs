@@ -17,7 +17,7 @@ data D = Zero
 
 instance Show D where
   show Zero = "0"
-  show Infinity = "∞"
+  show Infinity = "inf"
 
 data VerbPhrase = Predicate { predicate :: String, args :: [E] }
                 | CanSay { delegation :: D, what :: Fact }
@@ -26,8 +26,8 @@ data VerbPhrase = Predicate { predicate :: String, args :: [E] }
 
 instance Show VerbPhrase where
   show Predicate{predicate=p, args=as} = p ++ "(" ++ intercalate ", " (map show as) ++ ")"
-  show CanSay{delegation=d, what=w} = "can say"++show d++" "++show w
-  show CanActAs{whom=w} = "can act as "++show w
+  show CanSay{delegation=d, what=w} = "can-say "++show d++" "++show w
+  show CanActAs{whom=w} = "can-act-as "++show w
   
 data Fact = Fact { subject :: E, verb :: VerbPhrase }
           deriving (Eq)
@@ -85,12 +85,16 @@ data C = Boolean Bool
        deriving (Eq)
 
 instance Show C where
-  show (Boolean True) = "⊤"
-  show (Boolean False) = "⊥"
+  --show (Boolean True) = "⊤"
+  show (Boolean True) = "True"
+  --show (Boolean False) = "⊥"
+  show (Boolean False) = "False"
   show (Equals x y) = show x++"="++show y
-  show (Not (Equals x y)) = show x++"≠"++show y
-  show (Not x) = "¬ "++show x
-  show (Conj x y) = show x++" ⋀ "++show y
+  --show (Not (Equals x y)) = show x++"≠"++show y
+  --show (Not x) = "¬ "++show x
+  show (Not x) = "! "++show x
+  --show (Conj x y) = show x++" ⋀ "++show y
+  show (Conj x y) = show x++", "++show y
 
 data Value 
     = Int' Int
