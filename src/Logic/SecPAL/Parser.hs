@@ -149,8 +149,9 @@ pValue = try pFloat <|> pInt <|> pString <?> "value"
 pInt = pHex <|> pDec <?> "integer"
 
 pDec = do
+  sign <- option "" (string "-")  
   n <- many1 digit
-  return $ Int' (read n)
+  return $ Int' (read $ sign++n)
 
 pHex = do
   char '0'
@@ -159,10 +160,11 @@ pHex = do
   return $ Int' (read $ "0x"++n)
 
 pFloat = do
+  sign <- option "" (string "-")  
   int <- many1 digit
   char '.'
   frac <- many1 digit
-  return $ Float' (read $ int ++ "." ++ frac)
+  return $ Float' (read $ sign ++ int ++ "." ++ frac)
 
 pString = do
   char '"'
