@@ -13,7 +13,6 @@ pWs = spaces *> optional eof
 pListSep = spaces *> char ',' <* spaces
 pTokenChar = alphaNum <|> oneOf "-_~" <?> "token character"
 
-
 pE = pVariable <|> pConstant <?> "entity"
 
 pVariable = do
@@ -103,21 +102,22 @@ pAC = liftM AC (pAssertion `sepBy` spaces)
 pEc = try pApply <|> pEntity <|> pEValue <?> "constraint entity"
 
 pApply = do
-  name <- many1 pTokenChar
+  n <- letter
+  name <- many pTokenChar
   spaces
   char '('
   spaces
   args <- pEc `sepBy` try pListSep
   spaces
   char ')'
-  return $ Apply (F name) args
+  return $ Apply (F $ n:name) args
 
 pEntity = liftM Entity pE
 
 pEValue = liftM Value pValue
 
 
-pC = try pConj <|> pC' <?> "constraint"
+pC = try pConj <|> pC' <?> "conjugation or constraint"
 pC' = try pEquals <|> pNot <|> pBoolean <?> "constraint"
 
 pBoolean = pTrue <|> pFalse <?> "boolean"
@@ -146,7 +146,7 @@ pConj = do
 
 pValue = try pFloat <|> pInt <|> pString <?> "value"
 
-pInt = pHex <|> pDec <?> "integer"
+pInt = try pHex <|> pDec <?> "integer"
 
 pDec = do
   sign <- option "" (string "-")  

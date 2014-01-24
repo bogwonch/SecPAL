@@ -48,8 +48,10 @@ main = do
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
   runTests "Parser/All" testParser
 
+
   quickCheckResult propParsableE
   quickCheck propParsableD
+  {-
   quickCheck propParsableVerbPhrase
   quickCheck propParsableFact
   quickCheck propParsableClaim
@@ -57,3 +59,4 @@ main = do
   quickCheck propParsableEc
   quickCheck propParsableC
   quickCheck propParsableValue
+-}

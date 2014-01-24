@@ -7,10 +7,11 @@ import Data.Char
 import Text.Parsec
 import Logic.SecPAL.Parser
 
+propParsable :: (PShow a) => Parsec String () a -> a -> Bool
 propParsable spp sp = 
-    case parse spp "" (show sp) of
+    case parse spp "" (pShow sp) of
       (Left _) -> False
-      (Right sp') -> sp == sp'
+      (Right sp') -> pShow sp == pShow sp'
 
 
 arbitraryTokenChar = oneof [ arbitraryUpper
@@ -19,6 +20,7 @@ arbitraryTokenChar = oneof [ arbitraryUpper
                            ]
 arbitraryUpper = suchThat arbitrary isAsciiUpper
 arbitraryLower = suchThat arbitrary isAsciiLower
+arbitraryLetter = oneof [arbitraryUpper, arbitraryLower]
 
 propParsableE = propParsable pE
 instance Arbitrary E where
@@ -49,7 +51,7 @@ instance Arbitrary Assertion where
     arbitrary = Assertion <$> arbitrary <*> arbitrary
 
 instance Arbitrary F where
-    arbitrary = F <$> listOf1 arbitraryTokenChar
+    arbitrary = F <$> ((:) <$> arbitraryLetter <*> listOf arbitraryTokenChar)
 
 propParsableEc = propParsable pEc
 instance Arbitrary Ec where
@@ -61,20 +63,33 @@ instance Arbitrary Ec where
 propParsableC = propParsable pC
 instance Arbitrary C where
     arbitrary = oneof [ arbitraryC'
-                      , Conj <$> arbitraryC' <*> arbitrary 
+                      --, Conj <$> arbitraryC' <*> arbitrary 
                       ]
       where
-        arbitraryC' = oneof [ Boolean <$> arbitrary
-                            , Equals <$> arbitrary <*> arbitrary
-                            , Not <$> arbitraryC'
-                            ]
+        arbitraryC' = frequency [ (10, Boolean <$> arbitrary)
+                                , (1, Equals <$> arbitrary <*> arbitrary)
+                                , (1, Not <$> arbitraryC')
+                                ]
 
 propParsableValue = propParsable pValue
 instance Arbitrary Value where
     arbitrary = oneof [ Int' <$> arbitrary
                       , Float' <$> arbitrary
                       , String' <$> listOf (suchThat arbitrary (\x -> isAscii x && 
-                                                                      x /= '"'))
+                                                                     x `notElem` "\"\\" &&
+                                                                     isPrint x))
                       ]
 
+
+parseDebug spp sp = 
+  case parse spp "" (pShow sp) of
+    (Left err) -> putStrLn $ ":-( " ++ show err
+    (Right sp') -> parseDebug sp sp' 
+  where
+    parseDebug sp sp' = do
+      putStrLn $ "INPUT:  "++pShow sp
+      putStrLn $ "OUTPUT: "++pShow sp'
+      putStrLn   ""
+      putStrLn $ "INPUT:  "++show sp
+      putStrLn $ "OUTPUT: "++show sp'
 
