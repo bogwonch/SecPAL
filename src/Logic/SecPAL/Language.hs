@@ -8,7 +8,13 @@ class PShow a where
 
 data E = Variable { varName :: String }
        | Constant { constName :: String }
-       deriving (Eq,Show)
+       deriving (Show)
+
+instance Eq E where
+    (Variable _) == (Constant _) = False
+    (Constant _) == (Variable _) = False
+    (Variable x) == (Variable y) = x == y
+    (Constant x) == (Constant y) = x == y
 
 instance PShow E where
   pShow (Variable n) = n

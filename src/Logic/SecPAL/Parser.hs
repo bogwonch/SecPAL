@@ -164,7 +164,15 @@ pFloat = do
   int <- many1 digit
   char '.'
   frac <- many1 digit
-  return $ Float' (read $ sign ++ int ++ "." ++ frac)
+  exp <- option "" pExponent
+  let float = sign ++ int ++ "." ++ frac ++ exp
+  return $ Float' (read float)
+
+pExponent = do
+  char 'e'
+  s <- option "" (string "-")
+  n <- many1 digit
+  return $ "e" ++ s ++ n
 
 pString = do
   char '"'

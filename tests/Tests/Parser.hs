@@ -7,7 +7,7 @@ import Tests.Testable
 import Tests.TestResults
 
 pT spp sp =
-  let output = parse spp "" (show sp)
+  let output = parse spp "" (pShow sp)
       result = case output of
                  (Left err) -> TestFailed (Just $ show err)
                  (Right sp') -> if sp' == sp

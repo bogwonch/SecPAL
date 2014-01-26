@@ -6,6 +6,8 @@ import Control.Applicative
 import Data.Char
 import Text.Parsec
 import Logic.SecPAL.Parser
+import Tests.Testable
+import Tests.TestResults
 
 propParsable :: (PShow a) => Parsec String () a -> a -> Bool
 propParsable spp sp = 
@@ -13,6 +15,22 @@ propParsable spp sp =
       (Left _) -> False
       (Right sp') -> pShow sp == pShow sp'
 
+testParserQC = sequence [ qc "E" propParsableE
+                        , qc "D" propParsableD
+                        , qc "VerbPhrase" propParsableVerbPhrase
+                        , qc "Fact" propParsableFact
+                        , qc "Claim" propParsableClaim
+                        , qc "Assertion" propParsableAssertion
+                        , qc "Ec" propParsableEc
+                        , qc "C" propParsableC
+                        , qc "Value" propParsableValue
+                        ]
+
+qc name p = do
+    r <- quickCheckWithResult stdArgs{maxSize=32, chatty=False} p
+    return $ case r of
+               Success{} -> Test name TestPassed
+               _ -> Test name $ TestFailed (Just $ output r)
 
 arbitraryTokenChar = oneof [ arbitraryUpper
                            , arbitraryLower
@@ -37,6 +55,12 @@ instance Arbitrary VerbPhrase where
     arbitrary = oneof [ CanSay <$> arbitrary <*> arbitrary 
                       , Predicate <$> listOf1 arbitraryTokenChar <*> arbitrary
                       ]
+      where
+        arbVP 0 = Predicate <$> listOf1 arbitraryTokenChar <*> arbitrary
+        arbVP n = oneof [ CanSay <$> arbitrary <*> arbitrary 
+                        , Predicate <$> listOf1 arbitraryTokenChar <*> resize (n`div`2) arbitrary
+                        ]
+
 
 propParsableFact = propParsable pFact
 instance Arbitrary Fact where
@@ -55,21 +79,30 @@ instance Arbitrary F where
 
 propParsableEc = propParsable pEc
 instance Arbitrary Ec where
-    arbitrary = oneof [ Entity <$> arbitrary
-                      , Apply <$> arbitrary <*> arbitrary
-                      , Value <$> arbitrary
-                      ]
+    arbitrary = sized arbEc
+
+arbEc 0 = oneof [ Entity <$> arbitrary
+                , Value <$> arbitrary
+                ]
+
+arbEc n = oneof [ Entity <$> arbitrary
+                , Value <$> arbitrary
+                , Apply <$> arbitrary <*> listOf (resize (n`div`2) (sized arbEc))
+                ]
 
 propParsableC = propParsable pC
 instance Arbitrary C where
-    arbitrary = oneof [ arbitraryC'
-                      --, Conj <$> arbitraryC' <*> arbitrary 
+    arbitrary = oneof [ sized arbC'
+                      , Conj <$> sized arbC' <*> arbitrary 
                       ]
       where
-        arbitraryC' = frequency [ (10, Boolean <$> arbitrary)
-                                , (1, Equals <$> arbitrary <*> arbitrary)
-                                , (1, Not <$> arbitraryC')
-                                ]
+        arbC' 0 = oneof [ Boolean <$> arbitrary
+                        , Equals <$> arbitrary <*> arbitrary
+                        ]
+        arbC' n = oneof [ Boolean <$> arbitrary
+                        , Equals <$> arbitrary <*> arbitrary
+                        , Not <$> resize (n`div`2) (sized arbC')
+                        ]
 
 propParsableValue = propParsable pValue
 instance Arbitrary Value where

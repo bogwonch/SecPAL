@@ -28,6 +28,7 @@ runTests name ts =
     mapM_ print ts
     putStrLn ""
 
+runTestsM name ts = ts >>= runTests name
 showScore p f = 
   let t = p + f
       len = 10
@@ -38,7 +39,6 @@ showScore p f =
     putStr $ cFail ++ replicate fp '█'
     putStr cNormal
 
-
 main = do
   runTests "AssertionSafety/flat" testFlatness
   runTests "AssertionSafety/safe" testSafe
@@ -46,17 +46,6 @@ main = do
   runTests "AssertionSafety/ESSoS" testESSoS
   runTests "Evaluation/Truths" testEvaluationTruths
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
-  runTests "Parser/All" testParser
+  --runTests "Parser/All" testParser
 
-
-  quickCheckResult propParsableE
-  quickCheck propParsableD
-  {-
-  quickCheck propParsableVerbPhrase
-  quickCheck propParsableFact
-  quickCheck propParsableClaim
-  quickCheck propParsableAssertion
-  quickCheck propParsableEc
-  quickCheck propParsableC
-  quickCheck propParsableValue
--}
+  runTestsM "Parser/QuickCheck" testParserQC
