@@ -2,6 +2,7 @@ module Tests.AssertionSafety where
 
 import Logic.SecPAL.AssertionSafety
 import Logic.SecPAL.Language
+import Logic.SecPAL.Pretty
 
 import Tests.Testable
 
@@ -14,7 +15,7 @@ testIsFlat1 =
                     , verb = Predicate "can read" [Variable "f"]
                     } 
   in
-    Test{ description=show secpal, result=test .flat $ secpal }
+    Test{ description=pShow secpal, result=test .flat $ secpal }
 
 testIsFlat2 = 
   let secpal = Fact { subject = Constant "Charlie"
@@ -23,7 +24,7 @@ testIsFlat2 =
                                               }
                     }
   in
-    Test{ description=show secpal, result=test . not . flat $ secpal }
+    Test{ description=pShow secpal, result=test . not . flat $ secpal }
 
 testSafe = [ testSafe1
            , testSafe2
@@ -46,7 +47,7 @@ testSafe1 =
                  (Claim (Fact (Constant "B") 
                               (Predicate "can read" [ Constant "Foo" ])) 
                         [] (Boolean True))
-  in Test{ description=show secpal, result=test . safe $ secpal }
+  in Test{ description=pShow secpal, result=test . safe $ secpal }
 
 testSafe2 = 
   let secpal = Assertion 
@@ -56,7 +57,7 @@ testSafe2 =
                         [ Fact (Constant "B")
                                (Predicate "can" [Variable "x", Variable "y"])
                         ] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe3 = 
   let secpal = Assertion 
@@ -68,7 +69,7 @@ testSafe3 =
                         ] 
                         (Not (Equals (Entity $ Variable "x") 
                                      (Entity $ Variable "y"))))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 
 testSafe4 = 
@@ -82,7 +83,7 @@ testSafe4 =
                                (Predicate "can" [Variable "x", Variable "y"])
                         ] (Boolean True))
               
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe5 = 
   let secpal = Assertion 
@@ -97,7 +98,7 @@ testSafe5 =
                                (Predicate "can read" [Variable "y"])
                         ] (Boolean True))
               
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe6 = 
   let secpal = Assertion 
@@ -109,7 +110,7 @@ testSafe6 =
                                                              , Variable "z"
                                                              ]))))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
  
 testUnSafe1 =
@@ -120,7 +121,7 @@ testUnSafe1 =
                                                , Constant "Foo"
                                                ])) 
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . not . safe $ secpal }
+  in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 testUnSafe2 = 
   let secpal = Assertion 
@@ -130,7 +131,7 @@ testUnSafe2 =
                         [ Fact (Constant "B")
                                (Predicate "can" [Variable "x", Variable "y"])
                         ] (Boolean True))
-  in Test{description=show secpal, result=test . not . safe $ secpal }
+  in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 testUnSafe3 = 
   let secpal = Assertion (Constant "A") 
@@ -142,7 +143,7 @@ testUnSafe3 =
                                 (Not (Equals (Entity $ Variable "w") 
                                              (Entity $ Variable "y"))))
               
-  in Test{description=show secpal, result=test . not . safe $ secpal }
+  in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 testUnSafe4 = 
@@ -157,7 +158,7 @@ testUnSafe4 =
                                        (Fact (Constant "C")
                                              (Predicate "can" [Variable "x", Variable "y"])))
                         ] (Boolean True))
-  in Test{description=show secpal, result=test . not . safe $ secpal }
+  in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 testUnSafe5 = 
@@ -170,7 +171,7 @@ testUnSafe5 =
                                                              , Variable "z"
                                                              ]))))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . not . safe $ secpal }
+  in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 -- The assertion context from ESSoS paper
@@ -189,12 +190,12 @@ agTest1 =
                  (Claim (Fact (Variable "app")
                               (Predicate "meets" [Variable "policy"]))
                         [ Fact (Variable "evidence")
-                               (Predicate "shows meets"
+                               (Predicate "pShows meets"
                                           [ Variable "app"
                                           , Variable "policy"
                                           ])
                         ] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest2 =
   let secpal = Assertion
@@ -206,7 +207,7 @@ agTest2 =
                         , Fact (Variable "app")
                                (Predicate "meets" [Constant "NoInfoLeaks"])
                         ] (Boolean True))
-  in Test{description=show secpal, result = test . safe $ secpal }
+  in Test{description=pShow secpal, result = test . safe $ secpal }
 
 agTest3 = 
   let secpal = Assertion
@@ -216,7 +217,7 @@ agTest3 =
                                       (Fact (Variable "app")
                                             (Predicate "meets" [ Constant "NotMalware" ]))))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest4 = 
   let secpal = Assertion
@@ -226,7 +227,7 @@ agTest4 =
                                       (Fact (Variable "app")
                                             (Predicate "meets" [ Constant "NotMalware" ]))))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest5 = 
   let secpal = Assertion
@@ -236,7 +237,7 @@ agTest5 =
                                       (Fact (Variable "app")
                                             (Predicate "meets" [ Constant "NoInfoLeaks" ]))))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest6 = 
   let secpal = Assertion
@@ -244,18 +245,18 @@ agTest6 =
                  (Claim (Fact (Constant "Game")
                               (Predicate "meets" [ Constant "NotMalware" ]))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest7 =
   let secpal = Assertion
                  (Constant "NilInferer")
                  (Claim (Fact (Constant "Evidence")
-                              (Predicate "shows meets"
+                              (Predicate "pShows meets"
                                          [ Constant "Game"
                                          , Constant "Policy"
                                          ]))
                         [] (Boolean True))
-  in Test{description=show secpal, result=test . safe $ secpal }
+  in Test{description=pShow secpal, result=test . safe $ secpal }
 
 
 

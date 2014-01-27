@@ -50,12 +50,14 @@ executable SecPAL
   -- Modules included in this executable, other than Main.
   other-modules:    Logic.SecPAL.AssertionSafety
                     Logic.SecPAL.Language
+                    Logic.SecPAL.Pretty
                     Logic.SecPAL.Named
                     Logic.SecPAL.Vars
                     Logic.SecPAL.Substitutions
                     Logic.SecPAL.Context
                     Logic.SecPAL.Evaluable
                     Logic.SecPAL.Parser
+
 
   -- Other library packages from which modules are imported.
   build-depends:    base >= 4.5

@@ -1,6 +1,7 @@
 module Tests.Parser where
 
 import Logic.SecPAL.Language
+import Logic.SecPAL.Pretty
 import Logic.SecPAL.Parser
 import Text.Parsec
 import Tests.Testable

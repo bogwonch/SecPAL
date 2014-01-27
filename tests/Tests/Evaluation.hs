@@ -1,6 +1,7 @@
 module Tests.Evaluation where
 
 import Logic.SecPAL.Language
+import Logic.SecPAL.Pretty
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Context
 import Tests.Testable
@@ -29,7 +30,7 @@ inACTest1 =
                   }
     ctx = Context { ac=AC [a], d=Infinity }
   in
-    Test{ description = show ctx ++" |= "++show a
+    Test{ description = pShow ctx ++" |= "++pShow a
         , result = test $ ctx ||- a
         }
 
@@ -49,7 +50,7 @@ falseInACTest1 =
                   }
     ctx = Context { ac=AC [a], d=Infinity }
   in
-    Test{ description = show ctx ++" |= "++show b
+    Test{ description = pShow ctx ++" |= "++pShow b
         , result = test . not $ ctx ||- b
         }
 
@@ -76,7 +77,7 @@ condNoRename1 =
                   }
     ctx = Context { ac=AC [a', b], d=Infinity }
   in
-    Test{ description = show ctx ++" |= "++show a
+    Test{ description = pShow ctx ++" |= "++pShow a
         , result = test $ ctx ||- a
         }
         --
@@ -103,6 +104,6 @@ falseCondNoRename1 =
                   }
     ctx = Context { ac=AC [a', b], d=Infinity }
   in
-    Test{ description = show ctx ++" |= "++show a
+    Test{ description = pShow ctx ++" |= "++pShow a
         , result = test . not $ ctx ||- a
         }

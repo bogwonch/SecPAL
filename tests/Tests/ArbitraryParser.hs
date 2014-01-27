@@ -1,6 +1,7 @@
 module Tests.ArbitraryParser where
 
 import Logic.SecPAL.Language
+import Logic.SecPAL.Pretty
 import Test.QuickCheck
 import Control.Applicative
 import Data.Char
