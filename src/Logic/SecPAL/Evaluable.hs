@@ -7,7 +7,7 @@ import Logic.SecPAL.AssertionSafety (flat)
 --import Debug.Trace
 
 class Evaluable x where 
-  (||-) :: Context -> x -> Bool
+    (||-) :: Context -> x -> Bool
 
 instance Evaluable C where
     ctx ||- c = case c of
@@ -17,11 +17,11 @@ instance Evaluable C where
                   (Conj x y) -> (ctx ||- x) && (ctx ||- y)
 
 instance Evaluable Assertion where
-  ctx ||- x 
+    ctx ||- x 
     -- If x is in the assertion context then we're done
-    -- | x `isIn` ac ctx = trace (show x++" isIn "++show ctx) True
-    | x `isIn` ac ctx = True
-    | otherwise = tryCond ctx x
+      | x `isIn` ac ctx = True
+      | otherwise = tryCond ctx x || 
+                    tryCanSay ctx x
 
 
 isIn :: Assertion -> AC -> Bool
@@ -40,10 +40,31 @@ cond ctx result query =
         whoSays = asserts whom
         fs = conditions (says query)
         aSaysFs = map whoSays fs
-    in
-      all (ctx ||-) aSaysFs &&
-      ctx ||- (constraint . says $ query) &&
-      (flat . fact . says $ query)
+        in
+          all (ctx ||-) aSaysFs &&
+          ctx ||- (constraint . says $ query) &&
+          (flat . fact . says $ query)
+
+-- The Mysterious Can-Say Rule!
+--
+-- AC, oo |= A says B can-say D fact    AC, D |= B says fact
+-- ---------------------------------------------------------
+--                     AC, oo |= A says fact
+canSay :: Context -> Assertion -> Assertion -> Bool
+canSay ctx@Context{d=Zero} _ _ = False
+canSay ctx query canSayStm = 
+  let whom = who query
+      delegate = who canSayStm
+      f = fact . says $ query
+      cs = fact . says $ canSayStm
+      f' = what . verb $ cs
+      d = delegation . verb $ cs
+      b = subject cs
+  in
+    f == f' &&
+    ctx ||- delegates whom b f d &&
+    ctx{d=d} ||- (b `asserts` f)
+
 
 asserts :: E -> Fact -> Assertion
 a `asserts` f = Assertion { who=a
@@ -51,27 +72,58 @@ a `asserts` f = Assertion { who=a
                                          , conditions=[]
                                          , constraint=Boolean True
                                          }
-                          } 
+                          }
+
+delegates :: E -> E -> Fact -> D -> Assertion
+delegates from to what level =
+    Assertion { who=from
+              , says = Claim { fact = Fact { subject = to
+                                           , verb = CanSay level what
+                                           }
+                             , conditions=[]
+                             , constraint=Boolean True
+                             }
+              }
 
 tryCond :: Context -> Assertion -> Bool
 tryCond ctx a = 
-  let as = filter (isSpecific a) (acs (ac ctx))
-  in any (cond ctx a) as
+    let as = filter (isSpecific a) (acs (ac ctx))
+    in any (cond ctx a) as
+
+
+tryCanSay :: Context -> Assertion -> Bool
+tryCanSay ctx a = 
+    let as = filter (isDelegation a) (acs (ac ctx))
+    in any (cond ctx a) as
 
 isSpecific :: Assertion -> Assertion -> Bool
 x `isSpecific` y = 
     let 
-      who_x = who x
-      who_y = who y
-      says_x = says x
-      says_y = says y
-      fact_x = fact says_x
-      fact_y = fact says_y
-      result = ((who_x == who_y) && (fact_x == fact_y))
+        who_x = who x
+        who_y = who y
+        says_x = says x
+        says_y = says y
+        fact_x = fact says_x
+        fact_y = fact says_y
+        result = ((who_x == who_y) && (fact_x == fact_y))
     in 
-      --trace (show x ++ (if result then " <=== " else " <=/= ") ++ show y) $ 
-      result
+        --trace (show x ++ (if result then " <=== " else " <=/= ") ++ show y) $ 
+        result
 
+
+isDelegation :: Assertion -> Assertion -> Bool
+isDelegation 
+  x@Assertion{ who=a
+             , says=Claim{fact=f}
+             } 
+  y@Assertion{ who=a'
+             , says=Claim{ fact=Fact{ subject=b
+                                    , verb=CanSay{what=f'}
+                                    }
+                         }
+             }
+    = (a == a') && (f == f')
+isDelegation _ _ = False
 
 
 
