@@ -48,4 +48,4 @@ main = do
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
   runTests "Evaluation/Can-Say" testCanSay
 
-  --runTestsM "Parser/QuickCheck" testParserQC
+  runTestsM "Parser/QuickCheck" testParserQC
