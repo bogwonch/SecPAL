@@ -14,7 +14,8 @@ makeAssertion x = head . rights $ [ parse pAssertion "" x ]
 testEvaluationTruths = [inACTest1, condNoRename1]
 testEvaluationFalsehoods = [falseInACTest1, falseCondNoRename1]
 
-testCanSay = [canSay01]
+testCanSay = [canSay01, canSayInf1]
+testCanSayF = [canSayInfFalse1]
 
 -- An assertion is true if it is in the assertion context
 inACTest1 = 
@@ -60,8 +61,6 @@ falseCondNoRename1 =
         , result = test . not $ ctx ||- a
         }
 
-
-
 canSay01 =
   let q  = makeAssertion "Bob says Alice likes-jazz."
       a1 = makeAssertion "Bob says Alice can-say 0 Alice likes-jazz."
@@ -71,5 +70,23 @@ canSay01 =
           , result = test $ ctx ||- q
           }
 
+canSayInf1 =
+  let q  = makeAssertion "Bob says Alice likes-jazz."
+      a1 = makeAssertion "Bob says Alice can-say inf Alice likes-jazz."
+      a2 = makeAssertion "Alice says Clive can-say 0 Alice likes-jazz."
+      a3 = makeAssertion "Clive says Alice likes-jazz."
+      ctx = Context{ ac=AC [a1,a2,a3], d=Infinity }
+  in Test { description = pShow ctx ++ " |= " ++ pShow q
+          , result = test $ ctx ||- q
+          }
 
+canSayInfFalse1 =
+  let q  = makeAssertion "Bob says Alice likes-jazz."
+      a1 = makeAssertion "Bob says Alice can-say 0 Alice likes-jazz."
+      a2 = makeAssertion "Alice says Clive can-say 0 Alice likes-jazz."
+      a3 = makeAssertion "Clive says Alice likes-jazz."
+      ctx = Context{ ac=AC [a1,a2,a3], d=Infinity }
+  in Test { description = pShow ctx ++ " |= " ++ pShow q
+          , result = test . not $ ctx ||- q
+          }
 

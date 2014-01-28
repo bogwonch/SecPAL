@@ -47,5 +47,6 @@ main = do
   runTests "Evaluation/Truths" testEvaluationTruths
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
   runTests "Evaluation/Can-Say" testCanSay
+  runTests "Evaluation/Can-Say Falsehoods" testCanSayF
 
   runTestsM "Parser/QuickCheck" testParserQC
