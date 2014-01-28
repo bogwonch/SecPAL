@@ -46,6 +46,6 @@ main = do
   runTests "AssertionSafety/ESSoS" testESSoS
   runTests "Evaluation/Truths" testEvaluationTruths
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
-  --runTests "Parser/All" testParser
+  runTests "Evaluation/Can-Say" testCanSay
 
-  runTestsM "Parser/QuickCheck" testParserQC
+  --runTestsM "Parser/QuickCheck" testParserQC

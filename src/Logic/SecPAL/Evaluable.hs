@@ -1,6 +1,7 @@
 module Logic.SecPAL.Evaluable where
 
 import Logic.SecPAL.Language
+import Logic.SecPAL.Pretty
 import Logic.SecPAL.Context
 import Logic.SecPAL.AssertionSafety (flat)
 
@@ -94,7 +95,7 @@ tryCond ctx a =
 tryCanSay :: Context -> Assertion -> Bool
 tryCanSay ctx a = 
     let as = filter (isDelegation a) (acs (ac ctx))
-    in any (cond ctx a) as
+    in any (canSay ctx a) as
 
 isSpecific :: Assertion -> Assertion -> Bool
 x `isSpecific` y = 

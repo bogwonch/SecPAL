@@ -2,32 +2,24 @@ module Tests.Evaluation where
 
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
+import Logic.SecPAL.Parser
+import Text.Parsec
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Context
 import Tests.Testable
+import Data.Either
 
--- Hahahahahahah! This is crazy! I'm actually trying this!
---
--- Some entities to save typing
-alice = Constant "Alice"
-bob = Constant "Bob"
-
-isCool x = Fact{subject=x, verb=Predicate{predicate="is-cool", args=[]}}
-likesJazz x = Fact{subject=x, verb=Predicate{predicate="likes-jazz", args=[]}}
-
+makeAssertion x = head . rights $ [ parse pAssertion "" x ]
 
 testEvaluationTruths = [inACTest1, condNoRename1]
 testEvaluationFalsehoods = [falseInACTest1, falseCondNoRename1]
 
+testCanSay = [canSay01]
+
 -- An assertion is true if it is in the assertion context
 inACTest1 = 
   let 
-    a = Assertion { who=alice
-                  , says=Claim{ fact=isCool bob
-                              , conditions=[]
-                              , constraint=Boolean True 
-                              }
-                  }
+    a = makeAssertion "Alice says Bob is-cool."
     ctx = Context { ac=AC [a], d=Infinity }
   in
     Test{ description = pShow ctx ++" |= "++pShow a
@@ -36,18 +28,8 @@ inACTest1 =
 
 falseInACTest1 = 
   let 
-    a = Assertion { who=alice
-                  , says=Claim{ fact=isCool alice
-                              , conditions=[]
-                              , constraint=Boolean True 
-                              }
-                  }
-    b = Assertion { who=alice
-                  , says=Claim{ fact=isCool bob
-                              , conditions=[]
-                              , constraint=Boolean True 
-                              }
-                  }
+    a = makeAssertion "Alice says Alice is-cool."
+    b = makeAssertion "Alice says Bob is-cool."
     ctx = Context { ac=AC [a], d=Infinity }
   in
     Test{ description = pShow ctx ++" |= "++pShow b
@@ -57,24 +39,9 @@ falseInACTest1 =
 -- Can we use the cond variable without renaming
 condNoRename1 =
   let 
-    a = Assertion { who=alice
-                  , says=Claim{ fact=isCool bob
-                              , conditions=[]
-                              , constraint=Boolean True 
-                              }
-                  }
-    a' = Assertion { who=alice
-                   , says=Claim{ fact=isCool bob
-                               , conditions=[likesJazz bob]
-                               , constraint=Boolean True
-                               }
-                   }
-    b = Assertion { who=alice
-                  , says=Claim{ fact=likesJazz bob
-                              , conditions=[]
-                              , constraint=Boolean True
-                              }
-                  }
+    a = makeAssertion "Alice says Bob is-cool."
+    a' = makeAssertion "Alice says Bob is-cool if Bob likes-jazz."
+    b = makeAssertion "Alice says Bob likes-jazz."
     ctx = Context { ac=AC [a', b], d=Infinity }
   in
     Test{ description = pShow ctx ++" |= "++pShow a
@@ -84,26 +51,25 @@ condNoRename1 =
 
 falseCondNoRename1 =
   let 
-    a = Assertion { who=alice
-                  , says=Claim{ fact=isCool bob
-                              , conditions=[]
-                              , constraint=Boolean True 
-                              }
-                  }
-    a' = Assertion { who=alice
-                   , says=Claim{ fact=isCool bob
-                               , conditions=[likesJazz bob]
-                               , constraint=Boolean True
-                               }
-                   }
-    b = Assertion { who=alice
-                  , says=Claim{ fact=likesJazz bob
-                              , conditions=[]
-                              , constraint=Boolean False
-                              }
-                  }
+    a = makeAssertion "Alice says Bob is-cool."
+    a' = makeAssertion "Alice says Bob is-cool if Bob likes-jazz."
+    b = makeAssertion "Alice says Bob likes-jazz; False."
     ctx = Context { ac=AC [a', b], d=Infinity }
   in
     Test{ description = pShow ctx ++" |= "++pShow a
         , result = test . not $ ctx ||- a
         }
+
+
+
+canSay01 =
+  let q  = makeAssertion "Bob says Alice likes-jazz."
+      a1 = makeAssertion "Bob says Alice can-say 0 Alice likes-jazz."
+      a2 = makeAssertion "Alice says Alice likes-jazz."
+      ctx = Context{ ac=AC [a1,a2], d=Infinity }
+  in Test { description = pShow ctx ++ " |= " ++ pShow q
+          , result = test $ ctx ||- q
+          }
+
+
+
