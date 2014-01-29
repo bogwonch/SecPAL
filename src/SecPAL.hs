@@ -7,6 +7,7 @@ import Logic.SecPAL.Language
 import Logic.SecPAL.Named
 import Logic.SecPAL.Parser
 import Logic.SecPAL.Pretty
+import Logic.SecPAL.Proof
 import Logic.SecPAL.Substitutions
 import Logic.SecPAL.Vars
 import Text.Parsec
