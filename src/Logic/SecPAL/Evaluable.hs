@@ -4,25 +4,51 @@ import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
 import Logic.SecPAL.Context
 import Logic.SecPAL.AssertionSafety (flat)
+import Logic.SecPAL.Proof hiding (constraint, delegation)
+import Data.Maybe
 
 --import Debug.Trace
 
 class Evaluable x where 
-    (||-) :: Context -> x -> Bool
+    (||-) :: Context -> x -> Maybe (Proof x)
 
 instance Evaluable C where
+  {-
     ctx ||- c = case c of
                   (Boolean b) -> b
                   (Equals x y) -> x == y
                   (Not c') -> not (ctx ||- c)
                   (Conj x y) -> (ctx ||- x) && (ctx ||- y)
+  -}
+  
+  ctx ||- c@(Boolean True) = Just $ PStated (ctx,c)
+  ctx ||- c@(Boolean False) = Nothing
+
+  ctx ||- c@(Equals a b)
+    | a == b = Just $ PStated (ctx,c)
+    | otherwise = Nothing
+
+  ctx ||- c@(Not c') = 
+    let p = isJust $ ctx ||- c'
+    in if p 
+         then Just $ PStated (ctx,c)
+         else Nothing
+
+  ctx ||- c@(Conj x y) =
+    let pX = isJust $ ctx ||- x
+        pY = isJust $ ctx ||- y
+    in if pX && pY 
+         then Just $ PStated (ctx,c)
+         else Nothing
+
 
 instance Evaluable Assertion where
     ctx ||- x 
     -- If x is in the assertion context then we're done
-      | x `isIn` ac ctx = True
-      | otherwise = tryCond ctx x || 
-                    tryCanSay ctx x
+      | x `isIn` ac ctx = Just $ PStated (ctx,x)
+      | otherwise = let tC = tryCond ctx x 
+                        tCS = tryCanSay ctx x
+                    in if isJust tC then tC else tCS
 
 
 isIn :: Assertion -> AC -> Bool
@@ -35,24 +61,27 @@ x `isIn` (AC xs) = x `elem` xs
 -- --------------------------------------------------
 --                  AC, D |= A says f
 --
-cond :: Context -> Assertion -> Assertion -> Bool
+cond :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
 cond ctx result query =
     let whom = who query
         whoSays = asserts whom
         fs = conditions (says query)
         aSaysFs = map whoSays fs
-        in
-          all (ctx ||-) aSaysFs &&
-          ctx ||- (constraint . says $ query) &&
-          (flat . fact . says $ query)
+        in 
+          makeCond (ctx,result) 
+                   (map (ctx ||-) aSaysFs) 
+                   (ctx ||- (constraint . says $ query)) 
+                   (flat . fact . says $ query)
+
+
 
 -- The Mysterious Can-Say Rule!
 --
 -- AC, oo |= A says B can-say D fact    AC, D |= B says fact
 -- ---------------------------------------------------------
 --                     AC, oo |= A says fact
-canSay :: Context -> Assertion -> Assertion -> Bool
-canSay ctx@Context{d=Zero} _ _ = False
+canSay :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
+canSay ctx@Context{d=Zero} _ _ = Nothing
 canSay ctx query canSayStm = 
   let whom = who query
       delegate = who canSayStm
@@ -61,10 +90,11 @@ canSay ctx query canSayStm =
       f' = what . verb $ cs
       d = delegation . verb $ cs
       b = subject cs
-  in
-    f == f' &&
-    ctx ||- delegates whom b f d &&
-    ctx{d=d} ||- (b `asserts` f)
+  in if f == f'
+       then makeCanSay (ctx,query) 
+                       (ctx ||- delegates whom b f d) 
+                       (ctx{d=d} ||- (b `asserts` f))
+       else Nothing
 
 
 asserts :: E -> Fact -> Assertion
@@ -86,16 +116,20 @@ delegates from to what level =
                              }
               }
 
-tryCond :: Context -> Assertion -> Bool
+tryCond :: Context -> Assertion -> Maybe (Proof Assertion)
 tryCond ctx a = 
     let as = filter (isSpecific a) (acs (ac ctx))
-    in any (cond ctx a) as
+    in case filter isJust $ map (cond ctx a) as of
+         [] -> Nothing
+         (p:_) -> p
 
 
-tryCanSay :: Context -> Assertion -> Bool
+tryCanSay :: Context -> Assertion -> Maybe (Proof Assertion)
 tryCanSay ctx a = 
     let as = filter (isDelegation a) (acs (ac ctx))
-    in any (canSay ctx a) as
+    in case filter isJust $ map (canSay ctx a) as of
+         [] -> Nothing
+         (p:_) -> p
 
 isSpecific :: Assertion -> Assertion -> Bool
 x `isSpecific` y = 
@@ -125,8 +159,5 @@ isDelegation
              }
     = (a == a') && (f == f')
 isDelegation _ _ = False
-
-
-
 
 

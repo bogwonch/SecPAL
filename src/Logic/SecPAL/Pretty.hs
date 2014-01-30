@@ -65,5 +65,6 @@ instance PShow Value where
     pShow (String' x) = show x
 
 instance PShow Context where
-  pShow ctx = "(" ++ pShow (ac ctx) ++ ", " ++ pShow (d ctx) ++ ")"
+  --pShow ctx = "(" ++ pShow (ac ctx) ++ ", " ++ pShow (d ctx) ++ ")"
+  pShow ctx = "AC,"++pShow (d ctx)
 
