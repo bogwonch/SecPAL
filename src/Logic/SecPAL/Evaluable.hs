@@ -1,10 +1,10 @@
 module Logic.SecPAL.Evaluable where
 
 import Logic.SecPAL.Language
-import Logic.SecPAL.Pretty
 import Logic.SecPAL.Context
 import Logic.SecPAL.AssertionSafety (flat)
 import Logic.SecPAL.Proof hiding (constraint, delegation)
+import Logic.SecPAL.Substitutions
 import Data.Maybe
 
 --import Debug.Trace
@@ -13,16 +13,8 @@ class Evaluable x where
     (||-) :: Context -> x -> Maybe (Proof x)
 
 instance Evaluable C where
-  {-
-    ctx ||- c = case c of
-                  (Boolean b) -> b
-                  (Equals x y) -> x == y
-                  (Not c') -> not (ctx ||- c)
-                  (Conj x y) -> (ctx ||- x) && (ctx ||- y)
-  -}
-  
   ctx ||- c@(Boolean True) = Just $ PStated (ctx,c)
-  ctx ||- c@(Boolean False) = Nothing
+  _ ||- c@(Boolean False) = Nothing
 
   ctx ||- c@(Equals a b)
     | a == b = Just $ PStated (ctx,c)
@@ -63,8 +55,8 @@ x `isIn` (AC xs) = x `elem` xs
 --
 cond :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
 cond ctx result query =
-    let whom = who query
-        whoSays = asserts whom
+    let w = who query
+        whoSays = asserts w
         fs = conditions (says query)
         aSaysFs = map whoSays fs
         in 
