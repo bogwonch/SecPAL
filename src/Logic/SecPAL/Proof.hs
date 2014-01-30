@@ -19,8 +19,9 @@ data Proof a = PStated { conclusion :: (Context, a) }
 
 
 instance (PShow a) => PShow (Proof a) where
-  pShow = pShow' 0
-
+  pShow prf = let ac' = ac . fst . conclusion $ prf
+  	      in "AC := " ++ pShow ac' ++ "\n" ++ pShow' 0 prf
+  
 showCtx (ctx, a) = pShow ctx ++" |= "++pShow a
 
 pShow' :: (PShow a) => Int -> Proof a -> String
