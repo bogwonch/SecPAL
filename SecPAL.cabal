@@ -69,7 +69,6 @@ executable Tests
   build-depends:    base >= 4.5,
                     ansi-terminal,
                     parsec,
-                    pretty-show,
                     QuickCheck
   other-modules:    Tests.TestResults
                     Tests.Testable
