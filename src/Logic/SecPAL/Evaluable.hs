@@ -1,3 +1,4 @@
+{-# OPTIONS -Wall #-}
 module Logic.SecPAL.Evaluable where
 
 import Logic.SecPAL.Language
@@ -7,14 +8,15 @@ import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions
 import Data.Maybe
 
---import Debug.Trace
+import Debug.Trace
+import Logic.SecPAL.Pretty
 
 class Evaluable x where 
     (||-) :: Context -> x -> Maybe (Proof x)
 
 instance Evaluable C where
   ctx ||- c@(Boolean True) = Just $ PStated (ctx,c)
-  _ ||- c@(Boolean False) = Nothing
+  _ ||- (Boolean False) = Nothing
 
   ctx ||- c@(Equals a b)
     | a == b = Just $ PStated (ctx,c)
@@ -35,12 +37,14 @@ instance Evaluable C where
 
 
 instance Evaluable Assertion where
-    ctx ||- x 
-    -- If x is in the assertion context then we're done
-      | x `isIn` ac ctx = Just $ PStated (ctx,x)
-      | otherwise = let tC = tryCond ctx x 
-                        tCS = tryCanSay ctx x
-                    in if isJust tC then tC else tCS
+    ctx ||- x
+      | isJust tS = tS
+      | isJust tC = tC
+      | otherwise = tCS
+      where  
+        tS = tryStated ctx x
+        tC = tryCond ctx x 
+        tCS = tryCanSay ctx x
 
 
 isIn :: Assertion -> AC -> Bool
@@ -53,41 +57,69 @@ x `isIn` (AC xs) = x `elem` xs
 -- --------------------------------------------------
 --                  AC, D |= A says f
 --
-cond :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
-cond ctx result query =
+cond' :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
+cond' ctx result query =
     let w = who query
         whoSays = asserts w
         fs = conditions (says query)
         aSaysFs = map whoSays fs
-        in 
-          makeCond (ctx,result) 
-                   (map (ctx ||-) aSaysFs) 
-                   (ctx ||- (constraint . says $ query)) 
-                   (flat . fact . says $ query)
+        ctx' = ctx{theta=[]}
+    in
+      makeCond (ctx,result) 
+               (map (ctx' ||-) aSaysFs) 
+               (ctx' ||- (constraint . says $ query)) 
+               (flat . fact . says $ query)
 
 
+cond :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
+cond ctx result query =
+  let query'        = simplify query
+      renaming      = fromJust $ result ==? query'
+      renamedQuery  = subAll query renaming
+      renamedResult = subAll result renaming
+  in 
+      cond' ctx{theta=renaming} renamedResult renamedQuery
+  where
+    simplify q = 
+      let says' = (says q){ conditions=[], constraint=Boolean True }
+          q' = q{ says=says' }
+      in q'
 
 -- The Mysterious Can-Say Rule!
 --
 -- AC, oo |= A says B can-say D fact    AC, D |= B says fact
 -- ---------------------------------------------------------
 --                     AC, oo |= A says fact
-canSay :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
-canSay ctx@Context{d=Zero} _ _ = Nothing
-canSay ctx query canSayStm = 
-  let whom = who query
-      delegate = who canSayStm
+canSay' :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
+canSay' Context{d=Zero} _ _ = Nothing
+canSay' ctx query canSayStm = 
+  let w = who query
       f = fact . says $ query
       cs = fact . says $ canSayStm
       f' = what . verb $ cs
-      d = delegation . verb $ cs
+      de = delegation . verb $ cs
       b = subject cs
+      ctx' = ctx{theta=[]}
   in if f == f'
        then makeCanSay (ctx,query) 
-                       (ctx ||- delegates whom b f d) 
-                       (ctx{d=d} ||- (b `asserts` f))
+                       (ctx' ||- delegates w b f de) 
+                       (ctx'{d=de} ||- (b `asserts` f))
        else Nothing
 
+canSay :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)
+canSay ctx result canSayStm = 
+  let canSayStm'    = simplify canSayStm
+      pRenaming     = result ==? canSayStm'
+      renaming      = fromMaybe (error "can say statement failed to simplify") pRenaming 
+      renamedCSS    = subAll canSayStm renaming
+      renamedResult = subAll result renaming
+  in
+    canSay' ctx{theta=renaming} renamedResult renamedCSS
+  where
+    simplify q = 
+      let f = what . verb . fact . says $ q
+          claim' = (says q){ fact = f, conditions=[], constraint=Boolean True }
+      in q{ says=claim' }
 
 asserts :: E -> Fact -> Assertion
 a `asserts` f = Assertion { who=a
@@ -98,15 +130,24 @@ a `asserts` f = Assertion { who=a
                           }
 
 delegates :: E -> E -> Fact -> D -> Assertion
-delegates from to what level =
+delegates from to w level =
     Assertion { who=from
               , says = Claim { fact = Fact { subject = to
-                                           , verb = CanSay level what
+                                           , verb = CanSay level w
                                            }
                              , conditions=[]
                              , constraint=Boolean True
                              }
               }
+
+tryStated :: Context -> Assertion -> Maybe (Proof Assertion)
+tryStated ctx a =  
+  let as = filter (isJust . (==? a)) (acs $ ac ctx)
+  in case as of
+    [] -> Nothing
+    (p:_) -> 
+      let ts = fromJust $ p ==? a
+      in Just $ PStated (ctx{theta=ts}, p)
 
 tryCond :: Context -> Assertion -> Maybe (Proof Assertion)
 tryCond ctx a = 
@@ -132,7 +173,10 @@ x `isSpecific` y =
         says_y = says y
         fact_x = fact says_x
         fact_y = fact says_y
-        result = ((who_x == who_y) && (fact_x == fact_y))
+
+        whose = isJust $ who_x ==? who_y
+        facts = isJust $ fact_x ==? fact_y
+        result = whose && facts
     in 
         --trace (show x ++ (if result then " <=== " else " <=/= ") ++ show y) $ 
         result
@@ -140,16 +184,13 @@ x `isSpecific` y =
 
 isDelegation :: Assertion -> Assertion -> Bool
 isDelegation 
-  x@Assertion{ who=a
-             , says=Claim{fact=f}
-             } 
-  y@Assertion{ who=a'
-             , says=Claim{ fact=Fact{ subject=b
-                                    , verb=CanSay{what=f'}
-                                    }
-                         }
-             }
-    = (a == a') && (f == f')
+  Assertion{ who=a
+           , says=Claim{fact=f}
+           } 
+  Assertion{ who=a'
+           , says=Claim{ fact=Fact{ verb=CanSay{what=f'} } }
+           }
+    = isJust (a ==? a') && isJust (f ==? f')
 isDelegation _ _ = False
 
 

@@ -4,6 +4,7 @@ import Logic.SecPAL.Language (Assertion, C)
 import Logic.SecPAL.Pretty
 import Logic.SecPAL.Context
 import Data.Maybe
+import Data.List
 
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
@@ -19,9 +20,11 @@ data Proof a = PStated { conclusion :: (Context, a) }
 
 
 instance (PShow a) => PShow (Proof a) where
-  pShow prf = let ac' = ac . fst . conclusion $ prf
-  	      in "AC := " ++ pShow ac' ++ "\n" ++ pShow' 0 prf
+  pShow prf = 
+    let ac' = ac . fst . conclusion $ prf
+    in "AC := " ++ pShow ac' ++ "\n" ++ pShow' 0 prf
   
+showCtx :: (PShow a, PShow b) => (a, b) -> String
 showCtx (ctx, a) = pShow ctx ++" |= "++pShow a
 
 pShow' :: (PShow a) => Int -> Proof a -> String
@@ -29,38 +32,36 @@ pShow' n (PStated stm) =
     let statement = showCtx stm
         proven = replicate (length statement) '-'
     in 
-      --unlines $ map (replicate (n*2) ' ' ++) [statement, proven]
-      replicate (n*2) ' ' ++ statement ++ "\n" ++
-      replicate (n*2) ' ' ++ proven
+      intercalate "\n" $ map (replicate (n*2) ' ' ++) [statement, proven]
 
-pShow' n PCond{conclusion=cc, ifs=ifs, constraint=c} = 
-    unlines [ replicate (n*2) ' ' ++ showCtx cc
-            , concatMap (pShow' (n+1)) ifs 
-            , pShow' (n+1) c
-            ]
+pShow' n PCond{conclusion=cc, ifs=is, constraint=c} = 
+    intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
+                     , intercalate "\n" $ map (pShow' (n+1)) is 
+                     , pShow' (n+1) c
+                     ]
 
-pShow' n PCanSay{conclusion=cc, delegation=d, action=a} = 
-    unlines [ replicate (n*2) ' ' ++ showCtx cc
-            , pShow' (n+1) d
-            , pShow' (n+1) a
-            ]
+pShow' n PCanSay{conclusion=cc, delegation=de, action=a} = 
+    intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
+                     , pShow' (n+1) de
+                     , pShow' (n+1) a
+                     ]
 
 makeCond :: (Context, Assertion)
          -> [Maybe (Proof Assertion)]
          -> Maybe (Proof C)
          -> Bool
          -> Maybe (Proof Assertion)
-makeCond cc ifs cs flat
-  | any isNothing ifs = Nothing
+makeCond cc is cs flat
+  | any isNothing is = Nothing
   | isNothing cs = Nothing
   | not flat = Nothing
-  | otherwise = Just $ PCond cc (map fromJust ifs) (fromJust cs) flat
+  | otherwise = Just $ PCond cc (map fromJust is) (fromJust cs) flat
 
 makeCanSay :: (Context, Assertion)
            -> Maybe (Proof Assertion)
 	   -> Maybe (Proof Assertion)
 	   -> Maybe (Proof Assertion)
-makeCanSay cc d a
-  | isNothing d = Nothing
+makeCanSay cc de a
+  | isNothing de = Nothing
   | isNothing a = Nothing
-  | otherwise = Just $ PCanSay cc (fromJust d) (fromJust a)
+  | otherwise = Just $ PCanSay cc (fromJust de) (fromJust a)

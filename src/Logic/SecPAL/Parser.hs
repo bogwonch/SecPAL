@@ -3,11 +3,8 @@ module Logic.SecPAL.Parser where
 
 import Logic.SecPAL.Language
 import Text.Parsec
-import Control.Applicative ((*>), (<*>), (<*))
+import Control.Applicative ((*>), (<*))
 import Control.Monad 
-import Data.Maybe
-
-import Debug.Trace
 
 pWs = spaces *> optional eof
 pListSep = spaces *> char ',' <* spaces

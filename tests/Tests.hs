@@ -3,12 +3,9 @@ module Main where
 import Tests.AssertionSafety
 import Tests.Evaluation
 import Tests.TestResults
-import Tests.Parser
 import Tests.Testable
 import Tests.ArbitraryParser
 import System.Console.ANSI
-import Test.QuickCheck
-import Data.Function
 
 cTitle = setSGRCode [ SetColor Foreground Vivid Black]
 cSome = setSGRCode [ SetColor Foreground Dull Yellow]
@@ -39,6 +36,7 @@ showScore p f =
     putStr $ cFail ++ replicate fp '█'
     putStr cNormal
 
+main :: IO ()
 main = do
   runTests "AssertionSafety/flat" testFlatness
   runTests "AssertionSafety/safe" testSafe
@@ -48,5 +46,6 @@ main = do
   runTests "Evaluation/Falsehoods" testEvaluationFalsehoods
   runTests "Evaluation/Can-Say" testCanSay
   runTests "Evaluation/Can-Say Falsehoods" testCanSayF
+  runTests "Evaluation/Renaming" testRenamingEval
 
   runTestsM "Parser/QuickCheck" testParserQC

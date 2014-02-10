@@ -1,12 +1,18 @@
 module Logic.SecPAL.Pretty where
 
 import Logic.SecPAL.Language
-import Logic.SecPAL.Context
 import Data.List
-import Data.Char
 
 class PShow a where
   pShow :: a -> String
+
+instance PShow a => PShow (Maybe a) where 
+  pShow (Just a) = pShow a
+  pShow Nothing = ":-("
+
+instance PShow a => PShow [a] where
+  pShow xs = "[" ++ intercalate ", " (map pShow xs) ++ "]"
+
 
 instance PShow E where
   pShow (Variable n) = n
@@ -18,25 +24,25 @@ instance PShow D where
 
 instance PShow VerbPhrase where
   pShow Predicate{predicate=p, args=as} = p ++ "(" ++ intercalate ", " (map pShow as) ++ ")"
-  pShow CanSay{delegation=d, what=w} = "can-say "++pShow d++" "++pShow w
+  pShow CanSay{delegation=de, what=w} = "can-say "++pShow de++" "++pShow w
   pShow CanActAs{whom=w} = "can-act-as "++pShow w
   
 instance PShow Fact where
   pShow Fact{subject=s, verb=vp} = pShow s++" "++pShow vp
 
 instance PShow Claim where    
-  pShow Claim{fact=f, conditions=fs, constraint=c} = 
-    case (fs, c) of
+  pShow Claim{fact=f, conditions=fs, constraint=c'} = 
+    case (fs, c') of
       ([], Boolean True) -> pShow f
       (_,  Boolean True) -> pShow f++" if "++intercalate ", " (map pShow fs)
-      ([], c)            -> pShow f++"; "++pShow c
-      otherwise          -> pShow f++" if "++intercalate ", " (map pShow fs)++"; "++pShow c
+      ([], _)            -> pShow f++"; "++pShow c'
+      _                  -> pShow f++" if "++intercalate ", " (map pShow fs)++"; "++pShow c'
 
 instance PShow Assertion where
   pShow Assertion{who=w, says=s} = pShow w++" says "++pShow s++"."
 
 instance PShow AC where
-  pShow (AC acs) = "{ " ++ intercalate ", " (map pShow acs) ++ " }"
+  pShow (AC a) = "{ " ++ intercalate ", " (map pShow a) ++ " }"
 
 instance PShow F where
   pShow (F name) = name
@@ -64,7 +70,4 @@ instance PShow Value where
     pShow (Float' x) = show x
     pShow (String' x) = show x
 
-instance PShow Context where
-  --pShow ctx = "(" ++ pShow (ac ctx) ++ ", " ++ pShow (d ctx) ++ ")"
-  pShow ctx = "AC,"++pShow (d ctx)
 

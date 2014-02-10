@@ -13,7 +13,7 @@ import Logic.SecPAL.Vars
 flat :: Fact -> Bool
 flat Fact {verb=v} = case v of
                        CanSay {} -> False
-                       otherwise -> True
+                       _ -> True
 
 
 -- Definition 2.6. (Assertion safety) 
@@ -26,7 +26,7 @@ flat Fact {verb=v} = case v of
 --   3. fact1,...,factn are flat.
 safeIn :: E -> Claim -> Bool
 safeIn Constant {} _ = True
-safeIn v@(Variable {}) Claim { fact=f, conditions=fs, constraint=c }
+safeIn v@(Variable {}) Claim { fact=f, conditions=fs }
   | v `elem` vars f = v `elem` concatMap vars fs
   | otherwise = True 
 

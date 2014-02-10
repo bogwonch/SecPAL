@@ -76,4 +76,6 @@ executable Tests
                     Tests.Evaluation
                     Tests.Parser
                     Tests.ArbitraryParser
+                    Tests.Substitutions
+
 

@@ -1,24 +1,29 @@
 module Logic.SecPAL.Substitutions where
 
 import Logic.SecPAL.Language
+import Logic.SecPAL.Pretty
 import Data.Maybe
+import Debug.Trace
 
 data Substitution = Substitute{ var::E, for::E }
-  deriving (Eq)
+  deriving (Eq, Show)
 
 rename :: E -> E -> Substitution
 a `rename` b = Substitute{ var=a, for=b }
 
-instance Show Substitution where
-  show Substitute{var=v, for=f} = "("++show v++"\\"++show f++")"
+instance PShow Substitution where
+  pShow Substitute{var=v, for=f} = "("++pShow v++" := "++pShow f++")"
 
 class Substitutive a where
   sub :: a -> Substitution -> a 
   (==?) :: a -> a -> Maybe [Substitution]
 
+subAll :: (Substitutive a) => a -> [Substitution] -> a
+subAll = foldl sub 
+
 instance Substitutive E where
   x `sub` θ  
-    | x == var θ = var θ
+    | x == var θ = for θ 
     | otherwise  = x
 
   a@(Constant{}) ==? b@(Constant{})
@@ -28,7 +33,7 @@ instance Substitutive E where
   a@(Constant{}) ==? b@(Variable{}) = Just [b `rename` a]
   a@(Variable{}) ==? b@(Constant{}) = Just [a `rename` b]
 
-  _ ==? _ = Nothing
+  (Variable _) ==? (Variable _) = Just []
 
 -- There is almost certainly a better way using applicative
 instance Substitutive VerbPhrase where
@@ -39,7 +44,8 @@ instance Substitutive VerbPhrase where
   p@Predicate{} ==? q@Predicate{}
     | predicate p == predicate q = 
         let es = zipWith (==?) (args p) (args q)
-        in if all isJust es
+            same_es = length (args p) == length (args q)
+        in if same_es && all isJust es
              then Just . concat . catMaybes $ es
              else Nothing
     | otherwise = Nothing
@@ -70,14 +76,40 @@ instance Substitutive Claim where
      , constraint = c `sub` θ
      }
 
+  a@Claim{} ==? b@Claim{} = 
+    let fs  = fact a ==? fact b
+        sameIfs = length (conditions a) == length (conditions b)
+        ifs = zipWith (==?) (conditions a) (conditions b)
+        cs  = constraint a ==? constraint b
+    in 
+      if isJust fs && all isJust ifs && isJust cs && sameIfs 
+        then Just . concat . catMaybes $ fs : cs : ifs
+        else Nothing
+
 instance Substitutive Assertion where
   a@Assertion{who=w, says=s} `sub` θ = 
     a{ who=w `sub` θ
      , says=s `sub` θ
      }
 
+  a@Assertion{} ==? b@Assertion{} =
+    let w = who a ==? who b
+        s = says a ==? says b
+    in
+      if isJust w && isJust s
+        then Just . concat . catMaybes $ [w,s]
+        else Nothing
+
+
 instance Substitutive AC where
   (AC as) `sub` θ = AC $ map (`sub` θ) as
+
+  (AC as) ==? (AC bs) =
+    let es = zipWith (==?) as bs
+        sameEs = length as == length bs
+    in if sameEs && all isJust es
+         then Just . concat . catMaybes $ es 
+         else Nothing
 
 instance Substitutive Ec where
   (Entity e)   `sub` θ = Entity $ e `sub` θ
@@ -93,8 +125,9 @@ instance Substitutive Ec where
   (Apply f es) ==? (Apply f' es')
     | f /= f' = Nothing
     | otherwise = let renamed_es = zipWith (==?) es es'
+                      same_es = length es == length es'
                       renamable = all isJust renamed_es
-                  in if renamable 
+                  in if same_es && renamable 
                        then Just . concat . catMaybes $ renamed_es
                        else Nothing
 
@@ -119,7 +152,7 @@ instance Substitutive C where
     let as = a ==? a'
         bs = b ==? b'
     in if isJust as && isJust bs
-         then Just . concat .catMaybes $ [as,bs]
+         then Just . concat . catMaybes $ [as,bs]
          else Nothing
 
   (Boolean a) ==? (Boolean b)
@@ -127,3 +160,7 @@ instance Substitutive C where
     | otherwise = Nothing
 
   _ ==? _ = Nothing
+
+
+
+  
