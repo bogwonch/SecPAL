@@ -2,6 +2,8 @@
 module Logic.SecPAL.Parser where
 
 import Logic.SecPAL.Language
+import Logic.SecPAL.AssertionSafety
+import Logic.SecPAL.Pretty
 import Text.Parsec
 import Control.Applicative ((*>), (<*))
 import Control.Monad 
@@ -90,8 +92,18 @@ pAssertion = do
   what <- pClaim
   spaces
   char '.'
-  return Assertion{ who=who, says=what }
+  let assertion = Assertion{ who=who, says=what }
+  if safe assertion
+    then return assertion
+    else fail $ "Unsafe assertion: "++pShow assertion
 
+pAssertionUnsafe = do
+  who <- pE
+  string " says "
+  what <- pClaim
+  spaces
+  char '.'
+  return Assertion{ who=who, says=what }
 
 pAC = liftM AC (pAssertion `sepBy` spaces)
 

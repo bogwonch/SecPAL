@@ -71,7 +71,7 @@ propParsableClaim = propParsable pClaim
 instance Arbitrary Claim where
     arbitrary = Claim <$> arbitrary <*> arbitrary <*> arbitrary
 
-propParsableAssertion = propParsable pAssertion
+propParsableAssertion = propParsable pAssertionUnsafe
 instance Arbitrary Assertion where
     arbitrary = Assertion <$> arbitrary <*> arbitrary
 

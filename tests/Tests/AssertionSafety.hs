@@ -186,7 +186,8 @@ testESSoS = [ agTest1
 
 agTest1 = 
   let secpal = Assertion 
-                 (Constant "Phone")
+--                 (Constant "Phone")
+                 (Variable "anyone")
                  (Claim (Fact (Variable "app")
                               (Predicate "meets" [Variable "policy"]))
                         [ Fact (Variable "evidence")

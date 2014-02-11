@@ -11,8 +11,15 @@ import Data.Either
 import Data.Maybe
 
 
+makeAssertionUnsafe :: String -> Assertion
+makeAssertionUnsafe x = case parse pAssertionUnsafe "" x of
+  (Left err) -> error . show $ err
+  (Right a) -> a
+
 makeAssertion :: String -> Assertion
-makeAssertion x = head . rights $ [ parse pAssertion "" x ]
+makeAssertion x = case parse pAssertion "" x of
+  (Left err) -> error . show $ err
+  (Right a) -> a
 
 testEvaluationTruths = [inACTest1, condNoRename1]
 testEvaluationFalsehoods = [falseInACTest1, falseCondNoRename1]
@@ -25,7 +32,7 @@ testRenamingEval = [ condRename1, condRename2 , canSayRename1, testESSoSExample 
 -- An assertion is true if it is in the assertion context
 inACTest1 = 
   let 
-    a = makeAssertion "Alice says Bob is-cool."
+    a = makeAssertionUnsafe "Alice says Bob is-cool."
     ctx = stdCtx{ ac=AC [a], d=Infinity }
     prf = ctx ||- a
     pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -36,8 +43,8 @@ inACTest1 =
 
 falseInACTest1 = 
   let 
-    a = makeAssertion "Alice says Alice is-cool."
-    b = makeAssertion "Alice says Bob is-cool."
+    a = makeAssertionUnsafe "Alice says Alice is-cool."
+    b = makeAssertionUnsafe "Alice says Bob is-cool."
     ctx = stdCtx{ ac=AC [a], d=Infinity }
     prf = ctx ||- b
     pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -49,9 +56,9 @@ falseInACTest1 =
 -- Can we use the cond variable without renaming
 condNoRename1 =
   let 
-    a = makeAssertion "Alice says Bob is-cool."
-    a' = makeAssertion "Alice says Bob is-cool if Bob likes-jazz."
-    b = makeAssertion "Alice says Bob likes-jazz."
+    a = makeAssertionUnsafe "Alice says Bob is-cool."
+    a' = makeAssertionUnsafe "Alice says Bob is-cool if Bob likes-jazz."
+    b = makeAssertionUnsafe "Alice says Bob likes-jazz."
     ctx = stdCtx{ ac=AC [a', b], d=Infinity }
     prf = ctx ||- a
     pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -63,9 +70,9 @@ condNoRename1 =
 
 falseCondNoRename1 =
   let 
-    a = makeAssertion "Alice says Bob is-cool."
-    a' = makeAssertion "Alice says Bob is-cool if Bob likes-jazz."
-    b = makeAssertion "Alice says Bob likes-jazz; False."
+    a = makeAssertionUnsafe "Alice says Bob is-cool."
+    a' = makeAssertionUnsafe "Alice says Bob is-cool if Bob likes-jazz."
+    b = makeAssertionUnsafe "Alice says Bob likes-jazz; False."
     ctx = stdCtx{ ac=AC [a', b], d=Infinity }
     prf = ctx ||- a
     pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -75,9 +82,9 @@ falseCondNoRename1 =
         }
 
 canSay01 =
-  let q  = makeAssertion "Bob says Alice likes-jazz."
-      a1 = makeAssertion "Bob says Alice can-say 0 Alice likes-jazz."
-      a2 = makeAssertion "Alice says Alice likes-jazz."
+  let q  = makeAssertionUnsafe "Bob says Alice likes-jazz."
+      a1 = makeAssertionUnsafe "Bob says Alice can-say 0 Alice likes-jazz."
+      a2 = makeAssertionUnsafe "Alice says Alice likes-jazz."
       ctx = stdCtx{ ac=AC [a1,a2], d=Infinity }
       prf = ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -86,10 +93,10 @@ canSay01 =
           }
 
 canSayInf1 =
-  let q  = makeAssertion "Bob says Alice likes-jazz."
-      a1 = makeAssertion "Bob says Alice can-say inf Alice likes-jazz."
-      a2 = makeAssertion "Alice says Clive can-say 0 Alice likes-jazz."
-      a3 = makeAssertion "Clive says Alice likes-jazz."
+  let q  = makeAssertionUnsafe "Bob says Alice likes-jazz."
+      a1 = makeAssertionUnsafe "Bob says Alice can-say inf Alice likes-jazz."
+      a2 = makeAssertionUnsafe "Alice says Clive can-say 0 Alice likes-jazz."
+      a3 = makeAssertionUnsafe "Clive says Alice likes-jazz."
       ctx = stdCtx{ ac=AC [a1,a2,a3], d=Infinity }
       prf = ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -98,10 +105,10 @@ canSayInf1 =
           }
 
 canSayInfFalse1 =
-  let q  = makeAssertion "Bob says Alice likes-jazz."
-      a1 = makeAssertion "Bob says Alice can-say 0 Alice likes-jazz."
-      a2 = makeAssertion "Alice says Clive can-say 0 Alice likes-jazz."
-      a3 = makeAssertion "Clive says Alice likes-jazz."
+  let q  = makeAssertionUnsafe "Bob says Alice likes-jazz."
+      a1 = makeAssertionUnsafe "Bob says Alice can-say 0 Alice likes-jazz."
+      a2 = makeAssertionUnsafe "Alice says Clive can-say 0 Alice likes-jazz."
+      a3 = makeAssertionUnsafe "Clive says Alice likes-jazz."
       ctx = stdCtx{ ac=AC [a1,a2,a3], d=Infinity }
       prf = ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -111,8 +118,8 @@ canSayInfFalse1 =
 
 
 condRename1 = 
-  let q    = makeAssertion "Bob says Alice likes-jazz."
-      a1   = makeAssertion "Bob says everyone likes-jazz."
+  let q    = makeAssertionUnsafe "Bob says Alice likes-jazz."
+      a1   = makeAssertionUnsafe "Bob says everyone likes-jazz."
       ctx  = stdCtx{ ac=AC [a1], d=Infinity }
       prf  = ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -121,9 +128,9 @@ condRename1 =
           }
 
 condRename2 = 
-  let q = makeAssertion "Bob says Alice likes-jazz."
-      a1 = makeAssertion "Bob says everyone likes-jazz if everyone is-human."
-      a2 = makeAssertion "Bob says Alice is-human."
+  let q = makeAssertionUnsafe "Bob says Alice likes-jazz."
+      a1 = makeAssertionUnsafe "Bob says everyone likes-jazz if everyone is-human."
+      a2 = makeAssertionUnsafe "Bob says Alice is-human."
       ctx = stdCtx{ ac=AC [a1, a2], d=Infinity }
       prf = ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -132,9 +139,9 @@ condRename2 =
           }
 
 canSayRename1 = 
-  let q = makeAssertion "Bob says Alice likes-jazz."
-      a1 = makeAssertion "Bob says anyone can-say 0 anyone likes-jazz."
-      a2 = makeAssertion "Alice says Alice likes-jazz."
+  let q = makeAssertionUnsafe "Bob says Alice likes-jazz."
+      a1 = makeAssertionUnsafe "Bob says anyone can-say 0 anyone likes-jazz."
+      a2 = makeAssertionUnsafe "Alice says Alice likes-jazz."
       ctx = stdCtx{ ac=AC [a1, a2], d=Infinity }
       prf = ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -143,7 +150,7 @@ canSayRename1 =
           }
 
 testESSoSExample =
-  let q = makeAssertion "Phone says Game is-installable."
+  let q  = makeAssertion "Phone says Game is-installable."
       a3 = makeAssertion "Phone says app is-installable if app meets(NotMalware), app meets(NoInfoLeaks)."
       a4 = makeAssertion "anyone says app meets(policy) if evidence shows-meets(app, policy)."
       a5 = makeAssertion "Phone says NILInferer can-say 0 app meets(NoInfoLeaks)."
