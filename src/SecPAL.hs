@@ -55,7 +55,7 @@ showErr line err =
     putStrLn arrow
 
 
-test ac = (Context{ac=ac, d=Infinity} ||-)
+test ac = (stdCtx{ac=ac} ||-)
 
 main = do
   q <- getQuery

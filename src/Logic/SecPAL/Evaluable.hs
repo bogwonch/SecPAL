@@ -8,8 +8,8 @@ import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions
 import Data.Maybe
 
-import Debug.Trace
-import Logic.SecPAL.Pretty
+--import Debug.Trace
+--import Logic.SecPAL.Pretty
 
 class Evaluable x where 
     (||-) :: Context -> x -> Maybe (Proof x)
