@@ -1,0 +1,31 @@
+#! /bin/bash
+# Quick and dirty shell script to check whether and Android app has a permission
+
+APK="$1"
+PERM="$2"
+
+# Test if aapt exists
+which aapt >/dev/null
+if [ $? -ne 0 ]; then
+  echo "Error: this script depends on aapt which cannot be found" 1>&2
+  echo "Install the Android SDK and try again" 1>&2
+  exit -1
+fi
+
+# Test if arguments are sane
+if [ -z "$APK" -o -z "$PERM" -o ! -z "$3" ]; then
+  echo "Usage: $0 apk permission" 1>&2
+  exit -1
+fi
+
+# Test if APK file exists and is a file
+if [ ! -f "$APK" ]; then
+  echo "Error: $APK cannot be read" 1>&2
+  exit -1
+fi
+
+# Check if the permission exists
+# Grep returns 0 if it finds a line and 1 if it doesn't.  All other values indicate error
+aapt dump permissions "$APK" | egrep '^uses-permission: ' | grep -m 1 "$PERM"
+exit $?
+
