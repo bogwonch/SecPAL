@@ -1,5 +1,11 @@
 module Logic.SecPAL.Language where
 
+import System.Process
+import System.IO.Unsafe
+import Control.Monad
+import System.FilePath.Find
+import System.Exit
+
 data E = Variable { varName :: String }
        | Constant { constName :: String }
        deriving (Show)
@@ -65,7 +71,11 @@ data Value
   deriving (Eq,Show)
 
 
-{- This is dire code and will need to be extensible plus non crap... but later -}
+{- This is dire code, shouldn't be in this file at all, needs urgent refactoring
+ - and will need to be extensible plus non crap... but later 
+ -
+ - TODO: See above
+ -}
 baseInt = Int' 0
 baseFloat = Float' 0
 baseString = String' ""
@@ -82,4 +92,31 @@ typeF (F "permissionsCheck") = baseBool
 typeF f = error $ "undefined function type: "++show f
 
 evaluate :: F -> [Ec] -> Value
-evaluate = undefined
+evaluate (F "permissionsCheck") = unsafePerformIO . fPermissionsCheck -- FIXME: stop being lazy
+
+fPermissionsCheck :: [Ec] -> IO Value
+fPermissionsCheck [Entity (Constant app), Value (String' perm)] = 
+  do
+    command <- findCommand "permissionsCheck"
+    apk <- findAPK app
+    exitcode <- rawSystem command [apk, perm]
+    return $ case exitcode of
+      ExitSuccess   -> Bool' True
+      ExitFailure 1 -> Bool' False
+      _             -> error "failure in permissionsCheck"
+fPermissionsCheck _ = error "permissionsCheck usage: [apk :: Constant, perm :: String]"
+
+findCommand name = 
+  do
+    fs <- find always (fileName ==? name) "functions" 
+    case fs of 
+      (f:_) -> return f
+      _ -> fail $ "the command '"++show name++"' could not be found"
+
+findAPK name = 
+  do
+    fs <- find always (fileName ~~? ('*':name++"*.apk")) "apps" 
+    case fs of 
+      (f:_) -> return f
+      _ -> fail $ "the app '"++show name++"' could not be found"
+

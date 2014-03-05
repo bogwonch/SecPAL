@@ -46,7 +46,9 @@ executable SecPAL
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
   
-  build-depends:    parsec
+  build-depends:    parsec, 
+                    process,
+                    filemanip
   -- Modules included in this executable, other than Main.
   other-modules:    Logic.SecPAL.AssertionSafety
                     Logic.SecPAL.Language
@@ -69,7 +71,9 @@ executable Tests
   build-depends:    base >= 4.5,
                     ansi-terminal,
                     parsec,
-                    QuickCheck
+                    process,
+                    QuickCheck,
+                    filemanip
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
