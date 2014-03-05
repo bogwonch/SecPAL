@@ -112,6 +112,7 @@ instance Arbitrary Value where
                       , String' <$> listOf (suchThat arbitrary (\x -> isAscii x && 
                                                                      x `notElem` "\"\\" &&
                                                                      isPrint x))
+                      , Bool' <$> arbitrary
                       ]
 
 

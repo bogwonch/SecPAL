@@ -69,5 +69,6 @@ instance PShow Value where
     pShow (Int' x) = show x
     pShow (Float' x) = show x
     pShow (String' x) = show x
+    pShow (Bool' x) = show x
 
 

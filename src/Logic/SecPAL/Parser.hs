@@ -153,7 +153,14 @@ pConj = do
   return $ Conj a b
 
 
-pValue = try pFloat <|> pInt <|> pString <?> "value"
+pValue = try pFloat <|> pInt <|> pString <|> pBool <?> "value"
+
+-- TODO: Refactor duplicate code
+pBool = pTrue <|> pFalse <?> "boolean"
+  where 
+    pTrue =  string "True" *> return (Bool' True)
+    pFalse = string "False" *> return (Bool' False)
+
 
 pInt = try pHex <|> pDec <?> "integer"
 

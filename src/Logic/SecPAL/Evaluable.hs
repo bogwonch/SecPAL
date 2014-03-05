@@ -87,7 +87,7 @@ cond ctx result query =
 
 -- The Mysterious Can-Say Rule!
 --
--- AC, oo |= A says B can-say D fact    AC, D |= B says fact
+-- AC, oo |= A says B can-say D fact    AC, D |= B says factv
 -- ---------------------------------------------------------
 --                     AC, oo |= A says fact
 canSay' :: Context -> Assertion -> Assertion -> Maybe (Proof Assertion)

@@ -40,7 +40,15 @@ data F = F { fName :: String }
 data Ec = Entity E
         | Apply F [Ec]
         | Value Value
-        deriving (Eq,Show)
+        deriving (Show)
+
+instance Eq Ec where
+  (Entity a) == (Entity b) = a == b
+  (Value a) == (Value b) = a == b
+
+  f'@(Apply f args) == v'@(Value v) 
+    | typeF f == typeV v = evaluate f args == v
+    | otherwise = error $ "type error: "++show f'++" and "++ show v
 
 data C = Boolean Bool
        | Equals Ec Ec
@@ -52,5 +60,26 @@ data Value
     = Int' Int
     | Float' Float
     | String' String
+    | Bool' Bool
   deriving (Eq,Show)
 
+
+{- This is dire code and will need to be extensible plus non crap... but later -}
+baseInt = Int' 0
+baseFloat = Float' 0
+baseString = String' ""
+baseBool = Bool' True
+
+typeV :: Value -> Value
+typeV (Int' _) = baseInt
+typeV (Float' _) = baseFloat
+typeV (String' _) = baseString
+typeV (Bool' _) = baseBool
+
+typeF :: F -> Value
+typeF (F "permissionsCheck") = baseBool
+typeF f = error $ "undefined function type: "++show f
+
+
+evaluate :: F -> [Ec] -> Value
+evaluate = undefined
