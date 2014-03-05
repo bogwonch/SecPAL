@@ -34,6 +34,11 @@ pShow' n (PStated stm) =
     in 
       intercalate "\n" $ map (replicate (n*2) ' ' ++) [statement, proven]
 
+pShow' n PCond{conclusion=cc, ifs=[], constraint=c} = 
+    intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
+                     , pShow' (n+1) c
+                     ]
+
 pShow' n PCond{conclusion=cc, ifs=is, constraint=c} = 
     intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
                      , intercalate "\n" $ map (pShow' (n+1)) is 

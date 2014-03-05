@@ -108,7 +108,7 @@ pAssertionUnsafe = do
 pAC = liftM AC (pAssertion `sepBy` spaces)
 
 
-pEc = try pApply <|> pEntity <|> pEValue <?> "constraint entity"
+pEc = try pApply <|> try pEValue <|> pEntity <?> "constraint entity"
 
 pApply = do
   n <- letter

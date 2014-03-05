@@ -29,6 +29,8 @@ testCanSayF = [canSayInfFalse1]
 
 testRenamingEval = [ condRename1, condRename2 , canSayRename1, testESSoSExample ]
 
+testFunctions = [ testHasPermission, testHasntPermission, testHasntPermission2 ]
+
 -- An assertion is true if it is in the assertion context
 inACTest1 = 
   let 
@@ -164,3 +166,35 @@ testESSoSExample =
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
           , result = test . isJust $ prf
           }
+
+
+testHasPermission = 
+  let q  = makeAssertion "User says App can-access-internet."
+      a1 = makeAssertionUnsafe "anyone says app can-access-internet; permissionsCheck(app, \"INTERNET\") = True."
+      ctx = stdCtx{ac=AC [a1]}
+      prf = ctx ||- q
+      pPrf = maybe "" (\p -> '\n':pShow p) prf
+  in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+          , result = test . isJust $ prf
+          }
+
+testHasntPermission = 
+  let q  = makeAssertion "User says App cannot-access-internet."
+      a1 = makeAssertionUnsafe "anyone says app cannot-access-internet; permissionsCheck(app, \"INTERNET\") = False."
+      ctx = stdCtx{ac=AC [a1]}
+      prf = ctx ||- q
+      pPrf = maybe "" (\p -> '\n':pShow p) prf
+  in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+          , result = test . isNothing $ prf
+          }
+
+testHasntPermission2 = 
+  let q  = makeAssertion "User says App cannot-dance."
+      a1 = makeAssertionUnsafe "anyone says app cannot-dance; permissionsCheck(app, \"BOOGIE\") = False."
+      ctx = stdCtx{ac=AC [a1]}
+      prf = ctx ||- q
+      pPrf = maybe "" (\p -> '\n':pShow p) prf
+  in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+          , result = test . isJust $ prf
+          }
+          

@@ -54,8 +54,10 @@ instance Eq Ec where
 
   v'@(Value _) == f'@(Apply _ _) = f' == v'
   f'@(Apply f args) == v'@(Value v) 
-    | typeF f == typeV v = evaluate f args == v
+    | typeF f == typeV v = evaluate f args == v -- We're going to have to improve this later
     | otherwise = error $ "type error: "++show f'++" and "++ show v
+
+  a == b = error $ "comparing '"++show a++"' with '"++show b++"'"
 
 data C = Boolean Bool
        | Equals Ec Ec
