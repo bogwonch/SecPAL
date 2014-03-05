@@ -46,6 +46,7 @@ instance Eq Ec where
   (Entity a) == (Entity b) = a == b
   (Value a) == (Value b) = a == b
 
+  v'@(Value _) == f'@(Apply _ _) = f' == v'
   f'@(Apply f args) == v'@(Value v) 
     | typeF f == typeV v = evaluate f args == v
     | otherwise = error $ "type error: "++show f'++" and "++ show v
@@ -79,7 +80,6 @@ typeV (Bool' _) = baseBool
 typeF :: F -> Value
 typeF (F "permissionsCheck") = baseBool
 typeF f = error $ "undefined function type: "++show f
-
 
 evaluate :: F -> [Ec] -> Value
 evaluate = undefined
