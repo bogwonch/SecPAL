@@ -41,7 +41,7 @@ build-type:          Simple
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
-executable SecPAL
+executable secpal
   -- .hs or .lhs file containing the Main module.
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
@@ -64,7 +64,7 @@ executable SecPAL
   -- Other library packages from which modules are imported.
   build-depends:    base >= 4.5
   
-executable Tests
+executable tests
   main-is:          Tests.hs
   hs-source-dirs:   tests, src
   --type:             exitcode-stdio-1.0
