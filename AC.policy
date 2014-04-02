@@ -1,0 +1,12 @@
+Phone says app is-installable 
+  if app meets(NotMalware), 
+     app meets(NoInfoLeaks).
+
+anyone says app meets(policy) 
+  if evidence shows-meets(app, policy).
+
+Phone says NILInferer can-say 0 app meets(NoInfoLeaks).
+Phone says Google can-say inf app meets(NotMalware).
+Google says AVChecker can-say 0 app meets(NotMalware).
+AVChecker says Game meets(NotMalware).
+NILInferer says Evidence shows-meets(Game,NoInfoLeaks). 

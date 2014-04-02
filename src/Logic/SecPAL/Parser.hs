@@ -92,6 +92,7 @@ pAssertion = do
   what <- pClaim
   spaces
   char '.'
+  spaces
   let assertion = Assertion{ who=who, says=what }
   if safe assertion
     then return assertion

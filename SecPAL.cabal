@@ -48,7 +48,9 @@ executable secpal
   
   build-depends:    parsec, 
                     process,
-                    filemanip
+                    filemanip,
+                    either-unwrap,
+                    readline
   -- Modules included in this executable, other than Main.
   other-modules:    Logic.SecPAL.AssertionSafety
                     Logic.SecPAL.Language
