@@ -8,8 +8,9 @@ import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions
 import Data.Maybe
 
---import Debug.Trace
---import Logic.SecPAL.Pretty
+import Debug.Trace
+import Logic.SecPAL.Pretty
+import System.Console.ANSI
 
 class Evaluable x where 
     (||-) :: Context -> x -> Maybe (Proof x)
@@ -37,14 +38,32 @@ instance Evaluable C where
 
 
 instance Evaluable Assertion where
-    ctx ||- x
-      | isJust tS = tS
-      | isJust tC = tC
-      | otherwise = tCS
+    ctx ||- x =
+      if isJust tS 
+        then ifdebugT "is known" tS
+        else ifdebugF "not known fact." $
+          if isJust tC 
+            then ifdebugT "is conditionally known" tC
+            else ifdebugF "not conditionally known" $
+              if isJust tCS 
+                then ifdebugT "is delegatable" tCS 
+                else ifdebugF "not delegatable" Nothing
       where  
         tS = tryStated ctx x
         tC = tryCond ctx x 
         tCS = tryCanSay ctx x
+
+        ifdebugT message = 
+          if debug ctx
+            then trace $ inColor Green ("@ '"++pShow x++"' "++message)
+            else id
+
+        ifdebugF message = 
+          if debug ctx
+            then trace $ inColor Red ("@ '"++pShow x++"' "++message)
+            else id
+        
+        inColor c str = setSGRCode [SetColor Foreground Dull c] ++ str ++ setSGRCode[Reset]
 
 
 isIn :: Assertion -> AC -> Bool

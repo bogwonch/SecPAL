@@ -6,6 +6,8 @@ import Logic.SecPAL.Context
 import Data.Maybe
 import Data.List
 
+import Debug.Trace
+
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
                      , ifs :: [ Proof Assertion ]
@@ -58,15 +60,15 @@ makeCond :: (Context, Assertion)
          -> Maybe (Proof Assertion)
 makeCond cc is cs flat
   | any isNothing is = Nothing
-  | isNothing cs = Nothing
-  | not flat = Nothing
-  | otherwise = Just $ PCond cc (map fromJust is) (fromJust cs) flat
+  | isNothing cs     = Nothing
+  | not flat         = Nothing
+  | otherwise        = Just $ PCond cc (map fromJust is) (fromJust cs) flat
 
 makeCanSay :: (Context, Assertion)
            -> Maybe (Proof Assertion)
-	   -> Maybe (Proof Assertion)
-	   -> Maybe (Proof Assertion)
+      	   -> Maybe (Proof Assertion)
+	         -> Maybe (Proof Assertion)
 makeCanSay cc de a
   | isNothing de = Nothing
-  | isNothing a = Nothing
-  | otherwise = Just $ PCanSay cc (fromJust de) (fromJust a)
+  | isNothing a  = Nothing
+  | otherwise    = Just $ PCanSay cc (fromJust de) (fromJust a)

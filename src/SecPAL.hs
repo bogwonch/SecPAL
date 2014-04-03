@@ -42,7 +42,7 @@ options =
       "assertion context file"
   , Option "d" ["debug"] 
       (NoArg (\opts -> return opts{optDebug = True})) 
-      "debug (unimplemented)"
+      "debug mode"
   , Option "h" ["help"]
       (NoArg (\opts -> return opts{optHelp = True}))
       "show this message"
@@ -126,6 +126,13 @@ repl opts ac = do
     Just ":nov"       -> doSetNotVerbose
     Just ":noverbose" -> doSetNotVerbose
 
+    Just ":d!"      -> doToggleDebug
+    Just ":debug!"  -> doToggleDebug
+    Just ":d"       -> doSetDebug
+    Just ":debug"   -> doSetDebug
+    Just ":nod"     -> doSetNotDebug
+    Just ":nodebug" -> doSetNotDebug
+
     Just ":h"    -> doHelp
     Just ":help" -> doHelp
     Just "?"     -> doHelp
@@ -151,11 +158,10 @@ repl opts ac = do
       mapM_ (putStrLn . pShow) ac
       recur 
 
-
     doQuery q = do
       case parse pAssertion "" q of
         (Left err) -> hPutStrLn stderr ("@ " ++ show err)
-        (Right assertion) -> runQuery ac assertion (optVerbose opts)
+        (Right assertion) -> runQuery ac assertion (optVerbose opts) (optDebug opts)
       recur
 
 
@@ -163,9 +169,13 @@ repl opts ac = do
     doSetVerbose    = repl opts{optVerbose = True} ac
     doSetNotVerbose = repl opts{optVerbose = False} ac
 
+    doToggleDebug = repl opts{optDebug = not (optDebug opts)} ac
+    doSetDebug    = repl opts{optDebug = True} ac
+    doSetNotDebug = repl opts{optDebug = False} ac
 
-runQuery c q verbose = 
-  let ctx = stdCtx{ac=AC c}
+
+runQuery c q verbose debug = 
+  let ctx = stdCtx{ac=AC c, debug=debug}
       decision = ctx ||- q
   in case decision of
     Nothing  -> putStrLn "! No."
