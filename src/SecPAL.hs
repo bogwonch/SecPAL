@@ -151,6 +151,9 @@ repl opts ac = do
       putStrLn "  :v, :verbose         -> Turn on verbose mode"
       putStrLn "  :nov, :noverbose     -> Turn off verbose mode"
       putStrLn "  :v!, :verbose!       -> Toggle verbose mode"
+      putStrLn "  :d, :debug           -> Turn on debug mode"
+      putStrLn "  :nod, :nodebug       -> Turn off debug mode"
+      putStrLn "  :d!, :debug!         -> Toggle debug mode"
       putStrLn "  :h, :help, ?         -> Show this message"
       recur
 
