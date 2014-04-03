@@ -17,6 +17,20 @@ cabal sandbox install --only-dependencies
 cabal build
 ~~~
 
+## Readline and MacOS X
+
+The Haskell readline library is a little odd and needs some gentle pursuation to build.
+To get round this make sure you've installed `readline` with Homebrew; then use the following to get the library installed.
+
+~~~{.sh}
+cabal install readline --extra-include-dirs=/usr/local/opt/readline/include   \
+  --extra-lib-dirs=/usr/local/opt/readline/lib                                \
+  --configure-option=--with-readline-includes=/usr/local/opt/readline/include \
+  --configure-option=--with-readline-libraries=/usr/local/opt/readline/lib
+~~~
+
+Then build everything else as normal.
+
 # Running 
 
 To run either find the built binary and execute as normal or use cabal (recommended for the minute)
