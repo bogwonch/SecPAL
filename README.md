@@ -45,7 +45,7 @@ To run either find the built binary and execute as normal or use cabal (recommen
 To see the proofs you need to enable verbose mode.
 For instance:
 
-    $ cabal run secpal -- -f AC.policy
+    $ cabal run secpal -- -f doc/AC.policy
     Loaded assertion context.
     Enter query or :h to see the help
     ? Phone says Game is-installable.
