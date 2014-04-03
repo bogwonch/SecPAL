@@ -1,0 +1,3 @@
+[submodule "doc/vim-secpal"]
+	path = doc/vim-secpal
+	url = git@github.com:bogwonch/vim-secpal.git
