@@ -28,7 +28,9 @@ executable secpal
                     filemanip,
                     either-unwrap,
                     readline,
-                    ansi-terminal
+                    ansi-terminal,
+                    array,
+                    random
 
   other-modules:    Logic.SecPAL.AssertionSafety
                     Logic.SecPAL.Language
@@ -52,7 +54,9 @@ executable tests
                     parsec,
                     process,
                     QuickCheck,
-                    filemanip
+                    filemanip,
+                    random,
+                    array
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
