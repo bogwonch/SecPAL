@@ -122,6 +122,7 @@ pAssertionUnsafe = do
   c <- pClaim
   spaces
   char '.'
+  spaces
   return Assertion{ who=e, says=c }
 
 

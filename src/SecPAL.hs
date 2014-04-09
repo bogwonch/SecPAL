@@ -4,16 +4,11 @@ import Control.Monad hiding (forM_)
 import Data.Either.Unwrap
 import Data.Foldable (forM_)
 import Data.Maybe
-import Logic.SecPAL.AssertionSafety
 import Logic.SecPAL.Context
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Language
-import Logic.SecPAL.Named
 import Logic.SecPAL.Parser
 import Logic.SecPAL.Pretty
-import Logic.SecPAL.Proof
-import Logic.SecPAL.Substitutions
-import Logic.SecPAL.Vars
 import System.Console.GetOpt
 import System.Console.Readline
 import System.Environment
@@ -29,6 +24,7 @@ data Options = Options
   , optVerbose :: Bool
   } deriving Show
 
+defaultOptions :: Options
 defaultOptions = Options
   { optACFile  = Nothing
   , optDebug   = False
@@ -36,6 +32,7 @@ defaultOptions = Options
   , optVerbose = False
   }
 
+options :: [OptDescr (Options -> IO Options)] 
 options =
   [ Option "f" ["file"] 
       (ReqArg (\f opts -> return opts{optACFile = Just f}) "FILE") 
@@ -64,13 +61,12 @@ main = do
   argv <- getArgs
 
   -- Parse options, getting a list of option actions
-  let (actions, nonOptions, errors) = getOpt RequireOrder options argv
+  let (actions, _, errors) = getOpt RequireOrder options argv
 
   -- Here we thread startOptions through all supplied option actions
   opts <- foldl (>>=) (return defaultOptions) actions
 
   let Options { optACFile  = acfile
-              , optDebug   = debug   
               , optHelp    = help
               , optVerbose = verbose
               } = opts
@@ -82,29 +78,25 @@ main = do
   parsedAC <- parseFromFile (many1 pAssertion) (fromJust acfile)
 
   whenLeft parsedAC $ \err -> hPrint stderr err >> exitFailure
-  let ac = fromRight parsedAC
+  let theAC = fromRight parsedAC
   
   when verbose $ do
     putStrLn "The assertion context is:"
-    mapM_ (putStrLn . ("  "++) . pShow) ac 
+    mapM_ (putStrLn . ("  "++) . pShow) theAC 
     putStrLn ""
 
   replWelcome
 
-  repl opts ac
+  repl opts theAC
 
 
+replWelcome :: IO () 
 replWelcome = do
   putStrLn "Loaded assertion context."
   putStrLn "Enter query or :h to see the help"
   
-repl opts ac = do
-  let Options { optACFile  = acfile
-              , optDebug   = debug   
-              , optHelp    = help
-              , optVerbose = verbose
-              } = opts
-
+repl :: Options -> [Assertion] -> IO () 
+repl opts c = do
   input <- readline "? "
   forM_ input addHistory
   case input of
@@ -140,7 +132,7 @@ repl opts ac = do
     Just query -> doQuery query
 
   where
-    recur = repl opts ac
+    recur = repl opts c
 
     doHelp = do
       putStrLn "Enter a SecPAL query or a REPL command"
@@ -158,30 +150,31 @@ repl opts ac = do
       recur
 
     doShow = do
-      mapM_ (putStrLn . pShow) ac
+      mapM_ (putStrLn . pShow) c
       recur 
 
     doQuery q = do
       case parse pAssertion "" q of
         (Left err) -> hPutStrLn stderr ("@ " ++ show err)
-        (Right assertion) -> runQuery ac assertion (optVerbose opts) (optDebug opts)
+        (Right assertion) -> runQuery c assertion (optVerbose opts) (optDebug opts)
       recur
 
 
-    doToggleVerbose = repl opts{optVerbose = not (optVerbose opts)} ac
-    doSetVerbose    = repl opts{optVerbose = True} ac
-    doSetNotVerbose = repl opts{optVerbose = False} ac
+    doToggleVerbose = repl opts{optVerbose = not (optVerbose opts)} c
+    doSetVerbose    = repl opts{optVerbose = True} c
+    doSetNotVerbose = repl opts{optVerbose = False} c
 
-    doToggleDebug = repl opts{optDebug = not (optDebug opts)} ac
-    doSetDebug    = repl opts{optDebug = True} ac
-    doSetNotDebug = repl opts{optDebug = False} ac
+    doToggleDebug = repl opts{optDebug = not (optDebug opts)} c
+    doSetDebug    = repl opts{optDebug = True} c
+    doSetNotDebug = repl opts{optDebug = False} c
 
 
-runQuery c q verbose debug = 
-  let ctx = stdCtx{ac=AC c, debug=debug}
-      decision = ctx ||- q
-  in case decision of
-    Nothing  -> putStrLn "! No."
+runQuery :: (PShow x, Evaluable x) => [Assertion] -> x -> Bool -> Bool -> IO () 
+runQuery c q verbose debugging = do
+  let ctx = stdCtx{ac=AC c, debug=debugging}
+  decision <- ctx ||- q
+  case decision of
+    Nothing      -> putStrLn "! No."
     (Just proof) -> do when verbose $ (putStrLn . pShow) proof 
                        unless verbose $ putStrLn "! Yes."
 
