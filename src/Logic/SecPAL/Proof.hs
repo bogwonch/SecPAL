@@ -6,8 +6,6 @@ import Logic.SecPAL.Context
 import Data.Maybe
 import Data.List
 
-import Debug.Trace
-
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
                      , ifs :: [ Proof Assertion ]

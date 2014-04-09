@@ -3,7 +3,6 @@ module Logic.SecPAL.Substitutions where
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
 import Data.Maybe
-import Debug.Trace
 
 data Substitution = Substitute{ var::E, for::E }
   deriving (Eq, Show)

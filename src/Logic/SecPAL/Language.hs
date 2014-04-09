@@ -2,7 +2,6 @@ module Logic.SecPAL.Language where
 
 import System.Process
 import System.IO.Unsafe
-import Control.Monad
 import System.FilePath.Find
 import System.Exit
 
@@ -53,8 +52,8 @@ instance Eq Ec where
   (Value a) == (Value b) = a == b
 
   v'@(Value _) == f'@(Apply _ _) = f' == v'
-  f'@(Apply f args) == v'@(Value v) 
-    | typeF f == typeV v = evaluate f args == v -- We're going to have to improve this later
+  f'@(Apply f xs) == (Value v) 
+    | typeF f == typeV v = evaluate f xs == v -- We're going to have to improve this later
     | otherwise = error $ "type error: "++show f'++" and "++ show v
 
   a == b = error $ "comparing '"++show a++"' with '"++show b++"'"
@@ -78,9 +77,13 @@ data Value
  -
  - TODO: See above
  -}
+baseInt :: Value
 baseInt = Int' 0
+baseFloat :: Value
 baseFloat = Float' 0
+baseString :: Value
 baseString = String' ""
+baseBool :: Value
 baseBool = Bool' True
 
 typeV :: Value -> Value
@@ -108,6 +111,7 @@ fPermissionsCheck [Entity (Constant app), Value (String' perm)] =
       _             -> error "failure in permissionsCheck"
 fPermissionsCheck _ = error "permissionsCheck usage: [apk :: Constant, perm :: String]"
 
+findCommand :: String -> IO FilePath
 findCommand name = 
   do
     fs <- find always (fileName ==? name) "functions" 
@@ -115,6 +119,7 @@ findCommand name =
       (f:_) -> return f
       _ -> fail $ "the command '"++show name++"' could not be found"
 
+findAPK :: String -> IO FilePath
 findAPK name = 
   do
     fs <- find always (fileName ~~? ('*':name++"*.apk")) "apps" 
