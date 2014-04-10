@@ -7,7 +7,7 @@ import Control.Applicative
 import Data.Char
 import Text.Parsec
 import Logic.SecPAL.Parser
-import Tests.Testable
+import Tests.Testable hiding (Testable)
 import Tests.TestResults
 
 propParsable :: (PShow a) => Parsec String () a -> a -> Bool
@@ -16,6 +16,7 @@ propParsable spp sp =
       (Left _) -> False
       (Right sp') -> pShow sp == pShow sp'
 
+testParserQC :: IO [Test] 
 testParserQC = sequence [ qc "E" propParsableE
                         , qc "D" propParsableD
                         , qc "VerbPhrase" propParsableVerbPhrase
@@ -27,61 +28,73 @@ testParserQC = sequence [ qc "E" propParsableE
                         , qc "Value" propParsableValue
                         ]
 
+qc :: Testable prop => String -> prop -> IO Test 
 qc name p = do
     r <- quickCheckWithResult stdArgs{maxSize=32, chatty=False} p
     return $ case r of
                Success{} -> Test name TestPassed
                _ -> Test name $ TestFailed (Just $ output r)
 
+arbitraryTokenChar :: Gen Char 
 arbitraryTokenChar = oneof [ arbitraryUpper
                            , arbitraryLower
                            , suchThat arbitrary (`elem` "-~_0987654321")
                            ]
+arbitraryUpper :: Gen Char 
 arbitraryUpper = suchThat arbitrary isAsciiUpper
+arbitraryLower :: Gen Char 
 arbitraryLower = suchThat arbitrary isAsciiLower
+arbitraryLetter :: Gen Char 
 arbitraryLetter = oneof [arbitraryUpper, arbitraryLower]
 
+propParsableE :: E -> Bool 
 propParsableE = propParsable pE
+
 instance Arbitrary E where
     arbitrary = oneof [ Variable <$> ((:) <$> arbitraryLower <*> listOf arbitraryTokenChar)
                       , Constant <$> ((:) <$> arbitraryUpper <*> listOf arbitraryTokenChar)
                       ]
 
+propParsableD :: D -> Bool 
 propParsableD = propParsable pD
+
 instance Arbitrary D where
     arbitrary = elements [ Zero, Infinity ]
 
+propParsableVerbPhrase :: VerbPhrase -> Bool 
 propParsableVerbPhrase = propParsable pVerbPhrase
+
 instance Arbitrary VerbPhrase where
     arbitrary = oneof [ CanSay <$> arbitrary <*> arbitrary 
                       , Predicate <$> listOf1 arbitraryTokenChar <*> arbitrary
                       ]
-      where
-        arbVP 0 = Predicate <$> listOf1 arbitraryTokenChar <*> arbitrary
-        arbVP n = oneof [ CanSay <$> arbitrary <*> arbitrary 
-                        , Predicate <$> listOf1 arbitraryTokenChar <*> resize (n`div`2) arbitrary
-                        ]
 
-
+propParsableFact :: Fact -> Bool 
 propParsableFact = propParsable pFact
 instance Arbitrary Fact where
     arbitrary = Fact <$> arbitrary <*> arbitrary
 
+propParsableClaim :: Claim -> Bool 
 propParsableClaim = propParsable pClaim
 instance Arbitrary Claim where
     arbitrary = Claim <$> arbitrary <*> arbitrary <*> arbitrary
 
+propParsableAssertion :: Assertion -> Bool 
 propParsableAssertion = propParsable pAssertionUnsafe
+
 instance Arbitrary Assertion where
     arbitrary = Assertion <$> arbitrary <*> arbitrary
 
 instance Arbitrary F where
     arbitrary = F <$> ((:) <$> arbitraryLetter <*> listOf arbitraryTokenChar)
 
+propParsableEc :: Ec -> Bool 
 propParsableEc = propParsable pEc
+
 instance Arbitrary Ec where
     arbitrary = sized arbEc
 
+arbEc :: Int -> Gen Ec 
 arbEc 0 = oneof [ Entity <$> arbitrary
                 , Value <$> arbitrary
                 ]
@@ -91,7 +104,9 @@ arbEc n = oneof [ Entity <$> arbitrary
                 , Apply <$> arbitrary <*> listOf (resize (n`div`2) (sized arbEc))
                 ]
 
+propParsableC :: C -> Bool 
 propParsableC = propParsable pC
+
 instance Arbitrary C where
     arbitrary = oneof [ sized arbC'
                       , Conj <$> sized arbC' <*> arbitrary 
@@ -105,7 +120,9 @@ instance Arbitrary C where
                         , Not <$> resize (n`div`2) (sized arbC')
                         ]
 
+propParsableValue :: Value -> Bool 
 propParsableValue = propParsable pValue
+
 instance Arbitrary Value where
     arbitrary = oneof [ Int' <$> arbitrary
                       , Float' <$> arbitrary
@@ -115,7 +132,8 @@ instance Arbitrary Value where
                       , Bool' <$> arbitrary
                       ]
 
-
+{-
+parseDebug :: (Show a, Show a1, PShow a, PShow a1) => Parsec String () a1 -> a -> IO () 
 parseDebug spp sp = 
   case parse spp "" (pShow sp) of
     (Left err) -> putStrLn $ ":-( " ++ show err
@@ -127,4 +145,4 @@ parseDebug spp sp =
       putStrLn   ""
       putStrLn $ "INPUT:  "++show sp
       putStrLn $ "OUTPUT: "++show sp'
-
+-}

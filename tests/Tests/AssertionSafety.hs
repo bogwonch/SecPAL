@@ -6,10 +6,12 @@ import Logic.SecPAL.Pretty
 
 import Tests.Testable
 
+testFlatness :: [Test] 
 testFlatness = [ testIsFlat1
                , testIsFlat2
                ]
 
+testIsFlat1 :: Test 
 testIsFlat1 = 
   let secpal = Fact { subject = Constant "Bob"
                     , verb = Predicate "can read" [Variable "f"]
@@ -17,6 +19,7 @@ testIsFlat1 =
   in
     Test{ description=pShow secpal, result=test .flat $ secpal }
 
+testIsFlat2 :: Test 
 testIsFlat2 = 
   let secpal = Fact { subject = Constant "Charlie"
                     , verb = CanSay Zero Fact { subject = Constant "Bob"
@@ -26,6 +29,7 @@ testIsFlat2 =
   in
     Test{ description=pShow secpal, result=test . not . flat $ secpal }
 
+testSafe :: [Test] 
 testSafe = [ testSafe1
            , testSafe2
            , testSafe3
@@ -34,6 +38,7 @@ testSafe = [ testSafe1
            , testSafe6
            ]
 
+testUnsafe :: [Test] 
 testUnsafe = [ testUnSafe1
              , testUnSafe2
              , testUnSafe3
@@ -41,6 +46,7 @@ testUnsafe = [ testUnSafe1
              , testUnSafe5
              ]
 
+testSafe1 :: Test 
 testSafe1 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -49,6 +55,7 @@ testSafe1 =
                         [] (Boolean True))
   in Test{ description=pShow secpal, result=test . safe $ secpal }
 
+testSafe2 :: Test 
 testSafe2 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -59,6 +66,7 @@ testSafe2 =
                         ] (Boolean True))
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+testSafe3 :: Test 
 testSafe3 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -72,6 +80,7 @@ testSafe3 =
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 
+testSafe4 :: Test 
 testSafe4 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -85,6 +94,7 @@ testSafe4 =
               
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+testSafe5 :: Test 
 testSafe5 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -100,6 +110,7 @@ testSafe5 =
               
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+testSafe6 :: Test 
 testSafe6 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -113,6 +124,7 @@ testSafe6 =
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
  
+testUnSafe1 :: Test 
 testUnSafe1 =
   let secpal = Assertion 
                  (Constant "A") 
@@ -123,6 +135,7 @@ testUnSafe1 =
                         [] (Boolean True))
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
+testUnSafe2 :: Test 
 testUnSafe2 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -133,6 +146,7 @@ testUnSafe2 =
                         ] (Boolean True))
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
+testUnSafe3 :: Test 
 testUnSafe3 = 
   let secpal = Assertion (Constant "A") 
                          (Claim (Fact (Constant "B") 
@@ -146,6 +160,7 @@ testUnSafe3 =
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
+testUnSafe4 :: Test 
 testUnSafe4 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -161,6 +176,7 @@ testUnSafe4 =
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
+testUnSafe5 :: Test 
 testUnSafe5 = 
   let secpal = Assertion 
                  (Constant "A") 
@@ -175,6 +191,7 @@ testUnSafe5 =
 
 
 -- The assertion context from ESSoS paper
+testESSoS :: [Test] 
 testESSoS = [ agTest1
             , agTest2
             , agTest3
@@ -184,6 +201,7 @@ testESSoS = [ agTest1
             , agTest7
             ]
 
+agTest1 :: Test 
 agTest1 = 
   let secpal = Assertion 
 --                 (Constant "Phone")
@@ -198,6 +216,7 @@ agTest1 =
                         ] (Boolean True))
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+agTest2 :: Test 
 agTest2 =
   let secpal = Assertion
                  (Constant "Phone")
@@ -210,6 +229,7 @@ agTest2 =
                         ] (Boolean True))
   in Test{description=pShow secpal, result = test . safe $ secpal }
 
+agTest3 :: Test 
 agTest3 = 
   let secpal = Assertion
                  (Constant "Phone")
@@ -220,6 +240,7 @@ agTest3 =
                         [] (Boolean True))
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+agTest4 :: Test 
 agTest4 = 
   let secpal = Assertion
                  (Constant "Google")
@@ -230,6 +251,7 @@ agTest4 =
                         [] (Boolean True))
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+agTest5 :: Test 
 agTest5 = 
   let secpal = Assertion
                  (Constant "Phone")
@@ -240,6 +262,7 @@ agTest5 =
                         [] (Boolean True))
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+agTest6 :: Test 
 agTest6 = 
   let secpal = Assertion
                  (Constant "AVChecker")
@@ -248,6 +271,7 @@ agTest6 =
                         [] (Boolean True))
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
+agTest7 :: Test 
 agTest7 =
   let secpal = Assertion
                  (Constant "NilInferer")

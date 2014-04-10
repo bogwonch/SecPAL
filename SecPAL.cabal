@@ -56,12 +56,12 @@ executable tests
                     QuickCheck,
                     filemanip,
                     random,
-                    array
+                    array,
+                    mtl
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
                     Tests.Evaluation
-                    Tests.Parser
                     Tests.ArbitraryParser
                     Tests.Substitutions
 
