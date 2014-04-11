@@ -8,11 +8,18 @@ data Context = Context { ac :: AC
                        , d :: D
                        , theta :: [Substitution]
                        , debug :: Bool
+                       , pluginDir :: String
                        }
   deriving (Eq,Show)
 
 stdCtx :: Context
-stdCtx = Context { ac=AC [], d=Infinity, theta=[], debug=False }
+stdCtx = Context 
+  { ac        = AC []
+  , d         = Infinity
+  , theta     = []
+  , debug     = False
+  , pluginDir = "functions"
+  }
 
 instance PShow Context where
   --pShow ctx = "(" ++ pShow (ac ctx) ++ ", " ++ pShow (d ctx) ++ ")"

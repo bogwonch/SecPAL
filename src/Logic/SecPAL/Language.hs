@@ -1,9 +1,7 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Logic.SecPAL.Language where
 
-import System.Process
-import System.IO.Unsafe
-import System.FilePath.Find
-import System.Exit
+import Data.Typeable.Internal
 
 data E = Variable { varName :: String }
        | Constant { constName :: String }
@@ -45,18 +43,7 @@ data F = F { fName :: String }
 data Ec = Entity E
         | Apply F [Ec]
         | Value Value
-        deriving (Show)
-
-instance Eq Ec where
-  (Entity a) == (Entity b) = a == b
-  (Value a) == (Value b) = a == b
-
-  v'@(Value _) == f'@(Apply _ _) = f' == v'
-  f'@(Apply f xs) == (Value v) 
-    | typeF f == typeV v = evaluate f xs == v -- We're going to have to improve this later
-    | otherwise = error $ "type error: "++show f'++" and "++ show v
-
-  a == b = error $ "comparing '"++show a++"' with '"++show b++"'"
+        deriving (Eq,Show,Typeable)
 
 data C = Boolean Bool
        | Equals Ec Ec
@@ -70,60 +57,4 @@ data Value
     | String' String
     | Bool' Bool
   deriving (Eq,Show)
-
-
-{- This is dire code, shouldn't be in this file at all, needs urgent refactoring
- - and will need to be extensible plus non crap... but later 
- -
- - TODO: See above
- -}
-baseInt :: Value
-baseInt = Int' 0
-baseFloat :: Value
-baseFloat = Float' 0
-baseString :: Value
-baseString = String' ""
-baseBool :: Value
-baseBool = Bool' True
-
-typeV :: Value -> Value
-typeV (Int' _) = baseInt
-typeV (Float' _) = baseFloat
-typeV (String' _) = baseString
-typeV (Bool' _) = baseBool
-
-typeF :: F -> Value
-typeF (F "permissionsCheck") = baseBool
-typeF f = error $ "undefined function type: "++show f
-
-evaluate :: F -> [Ec] -> Value
-evaluate (F "permissionsCheck") = unsafePerformIO . fPermissionsCheck -- FIXME: stop being lazy
-
-fPermissionsCheck :: [Ec] -> IO Value
-fPermissionsCheck [Entity (Constant app), Value (String' perm)] = 
-  do
-    command <- findCommand "permissionsCheck"
-    apk <- findAPK app
-    exitcode <- rawSystem command [apk, perm]
-    return $ case exitcode of
-      ExitSuccess   -> Bool' True
-      ExitFailure 1 -> Bool' False
-      _             -> error "failure in permissionsCheck"
-fPermissionsCheck _ = error "permissionsCheck usage: [apk :: Constant, perm :: String]"
-
-findCommand :: String -> IO FilePath
-findCommand name = 
-  do
-    fs <- find always (fileName ==? name) "functions" 
-    case fs of 
-      (f:_) -> return f
-      _ -> fail $ "the command '"++show name++"' could not be found"
-
-findAPK :: String -> IO FilePath
-findAPK name = 
-  do
-    fs <- find always (fileName ~~? ('*':name++"*.apk")) "apps" 
-    case fs of 
-      (f:_) -> return f
-      _ -> fail $ "the app '"++show name++"' could not be found"
 

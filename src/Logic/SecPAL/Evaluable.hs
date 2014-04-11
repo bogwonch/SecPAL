@@ -7,6 +7,7 @@ import Data.Array.IO
 import Data.Maybe
 import Logic.SecPAL.AssertionSafety (flat)
 import Logic.SecPAL.Context
+import Logic.SecPAL.Constraints
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
 import Logic.SecPAL.Proof hiding (constraint, delegation)
@@ -22,9 +23,12 @@ instance Evaluable C where
   ctx ||- c@(Boolean True) = return . Just $ PStated (ctx,c)
   _ ||- (Boolean False) = return Nothing
 
-  ctx ||- c@(Equals a b)
-    | a == b = return . Just $ PStated (ctx,c)
-    | otherwise = return Nothing
+  ctx ||- c@(Equals a b) = do
+    a' <- evaluate ctx a
+    b' <- evaluate ctx b
+    return $ if a' == b' 
+      then Just . PStated $ (ctx, c)
+      else Nothing
 
   ctx ||- c@(Not c') = do
     p <- isJust <$> ctx ||- c'

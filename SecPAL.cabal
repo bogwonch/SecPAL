@@ -30,7 +30,9 @@ executable secpal
                     readline,
                     ansi-terminal,
                     array,
-                    random
+                    random,
+                    filepath,
+                    hint
 
   other-modules:    Logic.SecPAL.AssertionSafety
                     Logic.SecPAL.Language
@@ -57,7 +59,11 @@ executable tests
                     filemanip,
                     random,
                     array,
-                    mtl
+                    mtl,
+                    filepath,
+                    hint
+
+
   other-modules:    Tests.TestResults
                     Tests.Testable
                     Tests.AssertionSafety
