@@ -41,7 +41,6 @@ functionInterpreter ctx (Apply f xs) = do
   ans <- interpret expr (as :: IO String)
 
   -- Parse the answer
-  liftIO (ans >>= print)
   liftIO (ans >>= valueParser ctx (N.name f))
 
 valueParser :: Context -> SourceName -> String -> IO Ec
