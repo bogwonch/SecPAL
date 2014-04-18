@@ -44,8 +44,8 @@ functionInterpreter ctx (Apply f xs) = do
   liftIO (ans >>= valueParser ctx (N.name f))
 
 valueParser :: Context -> SourceName -> String -> IO Ec
-valueParser ctx name str =
-  case parse pEc name str of
+valueParser _ n str =
+  case parse pEc n str of
     (Left err) -> putStrLn ("failed to parse: " ++ show err) >> fail "parser error"
     (Right v) -> return v
 

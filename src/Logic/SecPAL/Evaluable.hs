@@ -4,6 +4,7 @@ module Logic.SecPAL.Evaluable where
 import Control.Applicative
 import Control.Monad (when, forM)
 import Data.Array.IO
+import Data.List
 import Data.Maybe
 import Logic.SecPAL.AssertionSafety (flat)
 import Logic.SecPAL.Context
@@ -163,9 +164,9 @@ cond ctx result query =
 -- AC, oo |= A says B can-say D fact    AC, D |= B says factv
 -- ---------------------------------------------------------
 --                     AC, oo |= A says fact
-canSay' :: Context -> Assertion -> Assertion -> IO Result
-canSay' Context{d=Zero} _ _ = return Nothing
-canSay' ctx query canSayStm = 
+canSay' :: Context -> Assertion -> Assertion -> Assertion -> IO Result
+canSay' Context{d=Zero} _ _ _ = return Nothing
+canSay' ctx query canSayStm origCanSay = 
   let w = who query
       f = fact . says $ query
       cs = fact . says $ canSayStm
@@ -173,10 +174,12 @@ canSay' ctx query canSayStm =
       de = delegation . verb $ cs
       b = subject cs
       ctx' = ctx{theta=[]}
+      AC theAC = ac ctx
+      ac' = AC $ origCanSay `delete` theAC -- to avoid infinite loop
   in if f == f'
        then do
          del <- ctx' ||- delegates w b f de 
-         ass <- ctx'{d=de} ||- (b `asserts` f)
+         ass <- ctx'{d=de, ac=ac'} ||- (b `asserts` f)
          return $
            makeCanSay 
              (ctx,query) 
@@ -192,7 +195,7 @@ canSay ctx result canSayStm =
       renamedCSS    = subAll canSayStm renaming
       renamedResult = subAll result renaming
   in
-    canSay' ctx{theta=renaming} renamedResult renamedCSS
+    canSay' ctx{theta=renaming} renamedResult renamedCSS canSayStm
   where
     simplify q = 
       let f = what . verb . fact . says $ q

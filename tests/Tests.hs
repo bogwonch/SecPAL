@@ -1,11 +1,12 @@
 module Main where
 
+import System.Console.ANSI
+import Tests.ArbitraryParser
 import Tests.AssertionSafety
+import Tests.Bugs
 import Tests.Evaluation
 import Tests.TestResults
 import Tests.Testable
-import Tests.ArbitraryParser
-import System.Console.ANSI
 
 cTitle = setSGRCode [ SetColor Foreground Vivid Black]
 cSome = setSGRCode [ SetColor Foreground Dull Yellow]
@@ -50,3 +51,5 @@ main = do
   runTests "Evaluation/Functions" testFunctions
 
   runTestsM "Parser/QuickCheck" testParserQC
+
+  runTests "Bugs/Infinite-Loop" [infLoop]
