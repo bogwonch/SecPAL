@@ -52,4 +52,5 @@ main = do
 
   runTestsM "Parser/QuickCheck" testParserQC
 
-  runTests "Bugs/Infinite-Loop" [infLoop]
+  runTests "Bugs/Infinite-Loop-cansay" [infLoop]
+  runTests "Bugs/Infinite-Loop-cond" [infLoop2]

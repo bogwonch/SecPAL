@@ -133,7 +133,9 @@ cond' ctx result query =
       whoSays = asserts w
       fs = conditions (says query)
       aSaysFs = map whoSays fs
-      ctx' = ctx{theta=[]}
+      AC theAC = ac ctx
+      ac' = AC $ query `delete` theAC -- removes cond infinite loop
+      ctx' = ctx{theta=[], ac=ac'}
   in do
     ifStatements <- mapM (ctx' ||-) aSaysFs
     cs <- ctx' ||- (constraint . says $ query)

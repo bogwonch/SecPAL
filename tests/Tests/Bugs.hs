@@ -24,7 +24,19 @@ infLoop =
     prf = unsafePerformIO $ ctx ||- q
     pPrf = maybe "" (\p -> '\n':pShow p) prf
   in
-    Test{ description = pShow ctx ++ "|= "++pShow q++pPrf
+    Test{ description = pShow ctx ++ " |= "++pShow q++pPrf
         , result = test . isNothing $ prf
         }
 
+infLoop2 :: Test
+infLoop2 =
+  let 
+    a = makeAssertion "Alice says Alice likes-jazz if Alice likes-jazz."
+    q = makeAssertion "Alice says Alice likes-jazz."
+    ctx = stdCtx{ ac=AC [a], d=Infinity }
+    prf = unsafePerformIO $ ctx ||- q
+    pPrf = maybe "" (\p -> '\n':pShow p) prf
+  in
+    Test{ description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+        , result = test . isNothing $ prf
+        }
