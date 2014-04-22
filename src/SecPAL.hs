@@ -22,6 +22,7 @@ data Options = Options
   , optDebug   :: Bool
   , optHelp    :: Bool
   , optVerbose :: Bool
+  , optCheck   :: Bool
   } deriving Show
 
 defaultOptions :: Options
@@ -30,6 +31,7 @@ defaultOptions = Options
   , optDebug   = False
   , optHelp    = False
   , optVerbose = False
+  , optCheck   = False
   }
 
 options :: [OptDescr (Options -> IO Options)] 
@@ -46,6 +48,9 @@ options =
   , Option "v" ["verbose"]
       (NoArg (\opts -> return opts{optVerbose = True}))
       "be more chatty"
+  , Option "c" ["check"]
+      (NoArg (\opts -> return opts{optCheck = True}))
+      "just check the file: no prompt"
   ]
 
 usage :: IO ()
@@ -69,6 +74,7 @@ main = do
   let Options { optACFile  = acfile
               , optHelp    = help
               , optVerbose = verbose
+              , optCheck   = checking
               } = opts
 
   unless (null errors)    $ mapM_ (hPutStrLn stderr) errors >> exitFailure
@@ -85,9 +91,10 @@ main = do
     mapM_ (putStrLn . ("  "++) . pShow) theAC 
     putStrLn ""
 
-  replWelcome
 
-  repl opts theAC
+  unless checking $ do
+    replWelcome
+    repl opts theAC
 
 
 replWelcome :: IO () 
