@@ -36,6 +36,9 @@ testRenamingEval = [ condRename1, condRename2 , canSayRename1, testESSoSExample 
 testFunctions :: [Test] 
 testFunctions = [ testHasPermission, testHasntPermission, testHasntPermission2 ]
 
+testCanActAs :: [Test]
+testCanActAs = [ testCanActAs1 ]
+
 -- An assertion is true if it is in the assertion context
 inACTest1 :: Test 
 inACTest1 = 
@@ -216,4 +219,17 @@ testHasntPermission2 =
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
           , result = test . isJust $ prf
           }
-          
+        
+
+-- Tests for Can-act-as
+testCanActAs1 :: Test
+testCanActAs1 = 
+  let q = makeAssertion "A says B okay."
+      a = makeAssertion "A says B can-act-as C."
+      b = makeAssertion "A says C okay."
+      ctx = stdCtx{ac=AC [a,b]}
+      prf = unsafePerformIO $ ctx ||- q
+      pPrf = maybe "" (\p -> '\n':pShow p) prf
+  in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+          , result = test . isJust $ prf
+          }

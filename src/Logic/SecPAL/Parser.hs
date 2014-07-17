@@ -51,7 +51,7 @@ pInf = do
 
 
 pVerbPhrase :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m VerbPhrase
-pVerbPhrase = try pCanSay <|> pPredicate <?> "verb phrase"
+pVerbPhrase = try pCanSay <|> try pCanActAs <|> pPredicate <?> "verb phrase"
 
 pPredicate :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m VerbPhrase
 pPredicate = do
@@ -76,6 +76,11 @@ pCanSay = do
   f <- pFact -- No nested says statements (probs shouldnt do this but parsing is easier)
   return CanSay{ delegation=d, what=f }
 
+pCanActAs = do
+  string "can-act-as"
+  spaces
+  w <- pE
+  return CanActAs{ whom=w }
 
 pFact :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Fact
 pFact = do

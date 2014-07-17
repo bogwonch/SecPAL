@@ -16,6 +16,10 @@ data Proof a = PStated { conclusion :: (Context, a) }
                        , delegation :: Proof Assertion
                        , action :: Proof Assertion
                        }
+             | PCanActAs { conclusion :: (Context, a)
+                         , renaming :: Proof Assertion
+                         , renamed :: Proof Assertion
+                         }
   deriving (Show)
 
 
@@ -51,6 +55,12 @@ pShow' n PCanSay{conclusion=cc, delegation=de, action=a} =
                      , pShow' (n+1) a
                      ]
 
+pShow' n PCanActAs{conclusion=cc, renaming=r, renamed=q} = 
+    intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
+                     , pShow' (n+1) r
+                     , pShow' (n+1) q
+                     ]
+
 makeCond :: (Context, Assertion)
          -> [Maybe (Proof Assertion)]
          -> Maybe (Proof C)
@@ -70,3 +80,13 @@ makeCanSay cc de a
   | isNothing de = Nothing
   | isNothing a  = Nothing
   | otherwise    = Just $ PCanSay cc (fromJust de) (fromJust a)
+
+
+makeCanActAs :: (Context, Assertion)
+             -> Maybe (Proof Assertion)
+             -> Maybe (Proof Assertion)
+             -> Maybe (Proof Assertion)
+makeCanActAs cc delta q
+  | isNothing delta = Nothing
+  | isNothing q     = Nothing
+  | otherwise       = Just $ PCanActAs cc (fromJust delta) (fromJust q)

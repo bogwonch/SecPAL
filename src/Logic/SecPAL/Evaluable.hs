@@ -16,7 +16,6 @@ import Logic.SecPAL.Substitutions
 import System.Console.ANSI
 import System.Random
 
-
 class Evaluable x where 
     (||-) :: Context -> x -> IO (Maybe (Proof x))
 
@@ -54,7 +53,7 @@ instance Evaluable Assertion where
      - Probably a neater way of doing this but randomization is cheap and
      - usually good!
      -}
-    strategies <- shuffle [statedStrategy, condStrategy, canSayStrategy]
+    strategies <- shuffle [statedStrategy, condStrategy, canSayStrategy, canActAsStrategy]
     tryStrategies ctx x strategies 
     where
       -- | Randomly shuffle a list
@@ -84,6 +83,9 @@ condStrategy   = strategy tryCond   "derivable fact"
 
 canSayStrategy :: Strategy
 canSayStrategy = strategy tryCanSay "delegatable"
+
+canActAsStrategy :: Strategy
+canActAsStrategy = strategy tryCanActAs "renameable"
 
 strategy :: (Context -> Assertion -> IO Result)
          -> String
@@ -150,11 +152,11 @@ cond' ctx result query =
 cond :: Context -> Assertion -> Assertion -> IO Result
 cond ctx result query =
   let query'        = simplify query
-      renaming      = fromJust $ result ==? query'
-      renamedQuery  = subAll query renaming
-      renamedResult = subAll result renaming
+      delta         = fromJust $ result ==? query'
+      renamedQuery  = subAll query delta
+      renamedResult = subAll result delta
   in 
-      cond' ctx{theta=renaming} renamedResult renamedQuery
+      cond' ctx{theta=delta} renamedResult renamedQuery
   where
     simplify q = 
       let says' = (says q){ conditions=[], constraint=Boolean True }
@@ -163,7 +165,7 @@ cond ctx result query =
 
 -- The Mysterious Can-Say Rule!
 --
--- AC, oo |= A says B can-say D fact    AC, D |= B says factv
+-- AC, oo |= A says B can-say D fact    AC, D |= B says fact
 -- ---------------------------------------------------------
 --                     AC, oo |= A says fact
 canSay' :: Context -> Assertion -> Assertion -> Assertion -> IO Result
@@ -172,7 +174,7 @@ canSay' ctx query canSayStm origCanSay =
   let w = who query
       f = fact . says $ query
       cs = fact . says $ canSayStm
-      f' = what . verb $ cs
+      f' = what . verb $ cs 
       de = delegation . verb $ cs
       b = subject cs
       ctx' = ctx{theta=[]}
@@ -193,16 +195,40 @@ canSay :: Context -> Assertion -> Assertion -> IO Result
 canSay ctx result canSayStm = 
   let canSayStm'    = simplify canSayStm
       pRenaming     = result ==? canSayStm'
-      renaming      = fromMaybe (error "can say statement failed to simplify") pRenaming 
-      renamedCSS    = subAll canSayStm renaming
-      renamedResult = subAll result renaming
+      delta      = fromMaybe (error "can say statement failed to simplify") pRenaming 
+      renamedCSS    = subAll canSayStm delta
+      renamedResult = subAll result delta
   in
-    canSay' ctx{theta=renaming} renamedResult renamedCSS canSayStm
+    canSay' ctx{theta=delta} renamedResult renamedCSS canSayStm
   where
     simplify q = 
       let f = what . verb . fact . says $ q
           claim' = (says q){ fact = f, conditions=[], constraint=Boolean True }
       in q{ says=claim' }
+
+-- Sublime Can-act-as Rule
+--
+-- AC, D |= A says B can-act-as C    AC, D |= A says C verbphrase
+-- --------------------------------------------------------------
+--                  AC, D |= A says B verbphrase
+canActAs' :: Context -> Assertion -> Assertion -> Assertion -> IO Result
+canActAs' ctx query canActAsStm renamedQuery = do
+  delta <- ctx ||- canActAsStm
+  result <- ctx ||- renamedQuery
+  return $
+    makeCanActAs
+      (ctx,query)
+      delta
+      result
+
+canActAs :: Context -> Assertion -> Assertion -> IO Result
+canActAs ctx query canActAsStm =
+  let delta = whom . verb . fact . says $ canActAsStm
+      c = says query
+      f = fact c
+      renamedQuery = query{ says=c{ fact=f{ subject=delta } } }
+  in
+    canActAs' ctx query canActAsStm renamedQuery
 
 asserts :: E -> Fact -> Assertion
 a `asserts` f = Assertion { who=a
@@ -242,7 +268,6 @@ tryCond ctx a =
          [] -> Nothing
          (p:_) -> p
 
-
 tryCanSay :: Context -> Assertion -> IO Result
 tryCanSay ctx a = 
     let as = filter (isDelegation a) (acs (ac ctx))
@@ -251,6 +276,15 @@ tryCanSay ctx a =
       return $ case filter isJust candidates of
          [] -> Nothing
          (p:_) -> p
+
+tryCanActAs :: Context -> Assertion -> IO Result
+tryCanActAs ctx a = 
+  let as = filter (isRenaming a) (acs $ ac ctx)
+  in do
+    candidates <- mapM (canActAs ctx a) as
+    return $ case filter isJust candidates of
+      [] -> Nothing
+      (p:_) -> p
 
 isSpecific :: Assertion -> Assertion -> Bool
 x `isSpecific` y = 
@@ -282,3 +316,17 @@ isDelegation
 isDelegation _ _ = False
 
 
+isRenaming :: Assertion -> Assertion -> Bool
+isRenaming
+  Assertion{ who=a
+           , says=Claim{ fact=Fact{ subject=b } }
+           }
+  Assertion{ who=a'
+           , says=Claim{ fact=Fact{ subject=b'
+                                  , verb=CanActAs{ whom=_ }
+                                  }
+                       }
+           }
+    = isJust (a ==? a') && isJust (b ==? b')
+
+isRenaming _ _ = False

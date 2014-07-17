@@ -53,6 +53,8 @@ instance Substitutive VerbPhrase where
     | delegation a == delegation b = what a ==? what b
     | otherwise = Nothing
 
+  a@CanActAs{} ==? b@CanActAs{} = whom a ==? whom b
+  
   _ ==? _ = Nothing
 
 instance Substitutive Fact where

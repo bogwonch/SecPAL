@@ -67,6 +67,7 @@ propParsableVerbPhrase = propParsable pVerbPhrase
 instance Arbitrary VerbPhrase where
     arbitrary = oneof [ CanSay <$> arbitrary <*> arbitrary 
                       , Predicate <$> listOf1 arbitraryTokenChar <*> arbitrary
+                      , CanActAs <$> arbitrary
                       ]
 
 propParsableFact :: Fact -> Bool 

@@ -48,6 +48,7 @@ main = do
   runTests "Evaluation/Can-Say" testCanSay
   runTests "Evaluation/Can-Say Falsehoods" testCanSayF
   runTests "Evaluation/Renaming" testRenamingEval
+  runTests "Evaluation/Can-Act-As" testCanActAs
   runTests "Evaluation/Functions" testFunctions
 
   runTestsM "Parser/QuickCheck" testParserQC
