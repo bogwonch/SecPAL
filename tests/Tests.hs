@@ -2,6 +2,7 @@ module Main where
 
 import System.Console.ANSI
 import Tests.ArbitraryParser
+import Tests.ArbitraryDatalog
 import Tests.AssertionSafety
 import Tests.Bugs
 import Tests.Evaluation
@@ -50,8 +51,7 @@ main = do
   runTests "Evaluation/Renaming" testRenamingEval
   runTests "Evaluation/Can-Act-As" testCanActAs
   runTests "Evaluation/Functions" testFunctions
-
   runTestsM "Parser/QuickCheck" testParserQC
-
+  runTestsM "Datalog/Parser" testDatalogQC
   runTests "Bugs/Infinite-Loop-cansay" [infLoop]
   runTests "Bugs/Infinite-Loop-cond" [infLoop2]

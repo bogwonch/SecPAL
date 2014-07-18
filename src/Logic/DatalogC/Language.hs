@@ -27,7 +27,7 @@ data Predicate = Predicate{ name :: String, args :: [Entity] }
 
 data Entity = Variable String
             | Constant String
-            deriving (Eq, Show)
+            deriving (Eq)
 
 -- TODO: work out what constraints really are
 data Constraint = Boolean Bool
@@ -55,4 +55,6 @@ instance Show Constraint where
     where show' (Boolean False) = "False"
           show' (Boolean True) = error "wtf?"
 
-
+instance Show Entity where
+ show (Variable x) = x
+ show (Constant x) = x

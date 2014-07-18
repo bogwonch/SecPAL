@@ -38,7 +38,7 @@ qc name p = do
 arbitraryTokenChar :: Gen Char 
 arbitraryTokenChar = oneof [ arbitraryUpper
                            , arbitraryLower
-                           , suchThat arbitrary (`elem` "-~_0987654321")
+                           , suchThat arbitrary (`elem` "-_0987654321")
                            ]
 arbitraryUpper :: Gen Char 
 arbitraryUpper = suchThat arbitrary isAsciiUpper

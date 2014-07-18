@@ -1,13 +1,19 @@
 module Main where
 
-import qualified Logic.DatalogC.Language as L
+import Control.Monad
+import Data.Either
 import Logic.DatalogC.Parser
 import System.Console.GetOpt
 import System.Console.Readline
 import System.Environment
 import System.Exit
+import System.IO
 import Text.Parsec
-import Control.Monad
+import Text.Parsec.ByteString.Lazy
+import qualified Logic.DatalogC.Language as L
+
+
+import Debug.Trace
 
 data Options = Options
   { optScripts :: [FilePath]
@@ -25,8 +31,10 @@ options :: [OptDescr (Options -> IO Options)]
 options = 
   [ Option "f" ["file"]
       (ReqArg (\f opts -> return opts{optScripts = f : optScripts opts}) "FILE")
+      "DatalogC knowledge base"
   , Option "h" ["help"]
-      (NoArg (\opts -> return opts{optHelp=True}) "show this message")
+      (NoArg (\opts -> return opts{optHelp=True}))
+      "show this message"
   ]
 
 usage :: IO ()
@@ -51,6 +59,11 @@ main = do
   when help            $ usage >> exitSuccess
   when (null scripts)  $ usage >> exitFailure
 
-  kb <- liftM concat $ mapM (parseFromFile (many1 pClause)) scripts
+  parsed <- mapM (parseFromFile (many1 pClause)) scripts
+  let (errs, datalog) = partitionEithers parsed
 
-  mapM_ print kb
+  traceIO $ "parsed!" ++ show scripts
+  traceIO $ show errs
+  unless (null errs) $ mapM_ (hPrint stderr) errs >> exitFailure
+
+  mapM_ print datalog

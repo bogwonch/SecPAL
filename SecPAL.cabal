@@ -46,7 +46,16 @@ executable secpal
 
 
   build-depends:    base >= 4.5 && < 5
-  
+
+executable datalogc
+  main-is: DatalogC.hs
+  hs-source-dirs: src
+  build-depends: base, parsec, readline, filepath
+  other-modules: Logic.DatalogC.Language
+                 Logic.DatalogC.Parser
+                 Logic.DatalogC.Safety
+                 Logic.DatalogC.Vars
+
 executable tests
   main-is:          Tests.hs
   hs-source-dirs:   tests, src

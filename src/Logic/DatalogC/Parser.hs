@@ -16,12 +16,13 @@ import Data.List
 -- This should really all be taken from SecPAL or refactored into a new
 -- generalised logic parser
 pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char 
-pTokenChar = letter <|> oneOf "-_'"
+pTokenChar = letter <|> digit <|> oneOf "-_'"
 
 pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pComment = char '%' *> manyTill anyChar (char '\n')
 
-pWs = do { spaces; optional pComment; pWs }
+pWs :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
+pWs = void $ spaces >> optional pComment 
 
 pListSep :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
 pListSep = pWs *> char ',' <* pWs
@@ -94,8 +95,6 @@ pRule = (string ":-" >> pWs) *> pPredicate `sepBy` pListSep
 pConstraint :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
 pConstraint = char '[' *> pWs *> pConstraintTerm <* pWs <* char ']'
  
-pWs :: forall b s u (m :: * -> *). Stream s m Char => ParsecT s u m b 
-
 pConstraintTerm :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
 pConstraintTerm = pBoolean
 
