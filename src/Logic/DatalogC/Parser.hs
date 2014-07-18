@@ -1,76 +1,105 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE RankNTypes #-}
+
 module Logic.DatalogC.Parser where
 
-import Logic.DatalogC.Language
+import Logic.DatalogC.Language as L
 import Logic.DatalogC.Safety
 import Text.Parsec
 import Control.Applicative ((*>), (<*))
 import Control.Monad
 import Data.Maybe
+import Data.List
 
 -- This should really all be taken from SecPAL or refactored into a new
 -- generalised logic parser
-pTokenChar = alpha <|> oneOf "-_'"
+pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char 
+pTokenChar = letter <|> oneOf "-_'"
+
+pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pComment = char '%' *> manyTill anyChar (char '\n')
+
 pWs = do { spaces; optional pComment; pWs }
 
 pListSep :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
 pListSep = pWs *> char ',' <* pWs
 
 -- Start of language proper
+pEntity :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity 
 pEntity = pVariable <|> pConstant <|> pString <?> "variable, constant or string"
 
+pToken :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pToken = many1 pTokenChar
 
+pVariable :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity
 pVariable = do
   n <- lower
   ns <- many pTokenChar
   return . Variable $ n:ns
 
+pConstant :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity
 pConstant = do 
   n <- upper
   ns <- many pTokenChar
   return . Constant $ n:ns
 
+pString :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity
 pString = liftM Constant $ char '"' *> many quotedChar <* char '"'
   where quotedChar = try (string "\\\"" >> return '"') <|> noneOf "\""
 
+pPredicate :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Predicate
 pPredicate = do
-  name <- pToken
+  n <- pToken
   arity' <- optionMaybe pArity
-  pWs
-  char '('
-  args <- pEntity `sepBy` pListSep
-  char ')'
-  let arity = length args
+  _ <- pWs
+  _ <- char '('
+  xs <- pEntity `sepBy` pListSep
+  _ <- char ')'
+  let arity = length xs
   -- Check if an explicit arity is correct wrt the arguments
   if maybe False (/= arity) arity'  
-    then fail $ "predicate \""++name++"\" has wrong arity:"++
+    then fail $ "predicate \""++n++"\" has wrong arity:"++
                 " declared "++show (fromJust arity')++
                 " but used "++show arity++"."
-    else return Predicate{ name=name, args=args }
+    else return Predicate{ name=n, args=xs }
 
+pArity :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Int
 pArity = liftM read $ char '/' *> many1 digit 
 
+pClause :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Clause
 pClause = do
-  pWs
+  _ <- pWs
   h <- pPredicate
-  pWs
+  _ <- pWs
   b <- option [] pRule
-  pWs
+  _ <- pWs
   c <- option (Boolean True) pConstraint
-  pWs
-  char '.'
-  let clause = Clause{ head=h, body=b, constraint=c }
+  _ <- pWs
+  _ <- char '.'
+  let clause = Clause{ L.head=h, body=b, constraint=c }
   if safe clause 
     then return clause
     else fail $
-      "unsafe variables ("++intercalate ", " (map show $ unsafeVars c)++") in clause \""++show c++"\""
+      "unsafe variables ("
+      ++intercalate ", " (map show $ unsafeVars clause)
+      ++") in clause \""
+      ++show clause
+      ++"\""
    
+pRule :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m [Predicate]
 pRule = (string ":-" >> pWs) *> pPredicate `sepBy` pListSep
-pConstraint = char '[' *> pWs *> pConstraintTerm `sepBy1` pListSep <* pWs <* char ']'
- 
-pConstraintTerms = pBoolean
 
+pConstraint :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
+pConstraint = char '[' *> pWs *> pConstraintTerm <* pWs <* char ']'
+ 
+pWs :: forall b s u (m :: * -> *). Stream s m Char => ParsecT s u m b 
+
+pConstraintTerm :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
+pConstraintTerm = pBoolean
+
+pBoolean :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
 pBoolean = pTrue <|> pFalse
   where pTrue = string "True" >> return (Boolean True)
         pFalse = string "False" >> return (Boolean False)
