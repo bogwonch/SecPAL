@@ -41,12 +41,12 @@ pD = pZero <|> pInf <?> "delegation level"
 
 pZero :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m D
 pZero = do
-  string "0"
+  _ <- string "0"
   return Zero
 
 pInf :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m D
 pInf = do
-  string "inf"
+  _ <- string "inf"
   return Infinity
 
 
@@ -62,22 +62,23 @@ pPredicate = do
 
 pPredicateArg :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m [E]
 pPredicateArg = do
-  char '('
+  _ <- char '('
   as <- pE `sepBy` pListSep
-  char ')'
+  _ <- char ')'
   return as
 
 pCanSay :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m VerbPhrase
 pCanSay = do
-  string "can-say"
+  _ <- string "can-say"
   spaces
   d <- pD
   spaces
   f <- pFact -- No nested says statements (probs shouldnt do this but parsing is easier)
   return CanSay{ delegation=d, what=f }
 
+pCanActAs :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m VerbPhrase
 pCanActAs = do
-  string "can-act-as"
+  _ <- string "can-act-as"
   spaces
   w <- pE
   return CanActAs{ whom=w }
@@ -102,13 +103,13 @@ pClaim = do
 
 pClaimConditional :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m [Fact]
 pClaimConditional = do
-  string "if"
+  _ <- string "if"
   spaces
   pFact `sepBy1` pListSep
 
 pClaimConstraint :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pClaimConstraint = do
-  char ';' -- Yeah not strictly SecPAL but it makes the parsing easier
+  _ <- char ';' -- Yeah not strictly SecPAL but it makes the parsing easier
   spaces
   pC
 
@@ -123,10 +124,10 @@ pAssertion = do
 pAssertionUnsafe :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Assertion
 pAssertionUnsafe = do
   e <- pE
-  string " says "
+  _ <- string " says "
   c <- pClaim
   spaces
-  char '.'
+  _ <- char '.'
   spaces
   return Assertion{ who=e, says=c }
 
@@ -143,11 +144,11 @@ pApply = do
   n <- letter
   name <- many pTokenChar
   spaces
-  char '('
+  _ <- char '('
   spaces
   as <- pEc `sepBy` try pListSep
   spaces
-  char ')'
+  _ <- char ')'
   return $ Apply (F $ n:name) as
 
 pEntity :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Ec
@@ -172,20 +173,20 @@ pBoolean = pTrue <|> pFalse <?> "boolean"
 pEquals :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pEquals = do
   a <- pEc
-  spaces *> string "=" <* spaces
+  _ <- spaces *> string "=" <* spaces
   b <- pEc 
   return $ Equals a b
 
 pNot :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pNot = do
-  char '!'
+  _ <- char '!'
   spaces
   x <- pC'
   return $ Not x
 
 pConj = do
   a <- pC'
-  spaces *> string "," <* spaces
+  _ <- spaces *> string "," <* spaces
   b <- pC
   return $ Conj a b
 
@@ -212,8 +213,8 @@ pDec = do
 
 pHex :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Value
 pHex = do
-  char '0'
-  oneOf "xX"
+  _ <- char '0'
+  _ <- oneOf "xX"
   n <- many1 hexDigit
   return $ Int' (read $ "0x"++n)
 
@@ -221,7 +222,7 @@ pFloat :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Value
 pFloat = do
   sign <- option "" (string "-")  
   int <- many1 digit
-  char '.'
+  _ <- char '.'
   frac <- many1 digit
   e <- option "" pExponent
   let float = sign ++ int ++ "." ++ frac ++ e
@@ -229,13 +230,13 @@ pFloat = do
 
 pExponent :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pExponent = do
-  char 'e'
+  _ <- char 'e'
   s <- option "" (string "-")
   n <- many1 digit
   return $ "e" ++ s ++ n
 
 pString :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Value
 pString = do
-  char '"'
+  _ <- char '"'
   word <- manyTill anyChar (try $ char '"')
   return $ String' word
