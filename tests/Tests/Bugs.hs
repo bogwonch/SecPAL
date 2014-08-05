@@ -5,6 +5,7 @@ import Tests.Evaluation (makeAssertion)
 
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Context
 import Tests.Testable

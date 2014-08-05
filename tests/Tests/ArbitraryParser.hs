@@ -1,7 +1,11 @@
 module Tests.ArbitraryParser where
 
+import Logic.General.Entities
+import Logic.General.Constraints
+import Logic.General.Parser
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 import Test.QuickCheck
 import Control.Applicative
 import Data.Char
@@ -10,7 +14,7 @@ import Logic.SecPAL.Parser
 import Tests.Testable hiding (Testable)
 import Tests.TestResults
 
-propParsable :: (PShow a) => Parsec String () a -> a -> Bool
+propParsable :: (Show a, PShow a) => Parsec String () a -> a -> Bool
 propParsable spp sp = 
     case parse spp "" (pShow sp) of
       (Left _) -> False
@@ -38,7 +42,7 @@ qc name p = do
 arbitraryTokenChar :: Gen Char 
 arbitraryTokenChar = oneof [ arbitraryUpper
                            , arbitraryLower
-                           , suchThat arbitrary (`elem` "-_0987654321")
+                           , suchThat arbitrary (`elem` "-_0987654321'")
                            ]
 arbitraryUpper :: Gen Char 
 arbitraryUpper = suchThat arbitrary isAsciiUpper

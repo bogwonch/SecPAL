@@ -3,6 +3,7 @@ module Main where
 import Control.Monad
 import Data.Either
 import Logic.DatalogC.Parser
+import Logic.DatalogC.Pretty
 import System.Console.GetOpt
 import System.Console.Readline
 import System.Environment

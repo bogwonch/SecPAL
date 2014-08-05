@@ -1,8 +1,8 @@
 module Logic.SecPAL.AssertionSafety where
 
+import Logic.General.Entities
 import Logic.SecPAL.Language
-import Logic.SecPAL.Vars
-
+import Logic.General.Vars
 
 -- We say that a fact is flat when it does not contain can say, and is
 -- nested otherwise. Facts are of the general form e1 can sayD1 ... en can

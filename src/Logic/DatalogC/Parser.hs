@@ -5,6 +5,8 @@
 
 module Logic.DatalogC.Parser where
 
+import Logic.General.Parser
+import Logic.General.Constraints
 import Logic.DatalogC.Language as L
 import Logic.DatalogC.Safety
 import Text.Parsec
@@ -13,50 +15,16 @@ import Control.Monad
 import Data.Maybe
 import Data.List
 
--- This should really all be taken from SecPAL or refactored into a new
--- generalised logic parser
-pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char 
-pTokenChar = letter <|> digit <|> oneOf "-_'"
-
-pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
-pComment = char '%' *> manyTill anyChar (char '\n')
-
-pWs :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
-pWs = void $ spaces >> optional pComment 
-
-pListSep :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
-pListSep = pWs *> char ',' <* pWs
-
--- Start of language proper
-pEntity :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity 
-pEntity = pVariable <|> pConstant <|> pString <?> "variable, constant or string"
-
 pToken :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pToken = many1 pTokenChar
 
-pVariable :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity
-pVariable = do
-  n <- lower
-  ns <- many pTokenChar
-  return . Variable $ n:ns
-
-pConstant :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity
-pConstant = do 
-  n <- upper
-  ns <- many pTokenChar
-  return . Constant $ n:ns
-
-pString :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Entity
-pString = liftM Constant $ char '"' *> many quotedChar <* char '"'
-  where quotedChar = try (string "\\\"" >> return '"') <|> noneOf "\""
-
 pPredicate :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Predicate
-pPredicate = do
+pPredicate = try $ do
   n <- pToken
   arity' <- optionMaybe pArity
   _ <- pWs
   _ <- char '('
-  xs <- pEntity `sepBy` pListSep
+  xs <- pE `sepBy` pListSep
   _ <- char ')'
   let arity = length xs
   -- Check if an explicit arity is correct wrt the arguments
@@ -90,16 +58,8 @@ pClause = do
       ++"\""
    
 pRule :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m [Predicate]
-pRule = (string ":-" >> pWs) *> pPredicate `sepBy` pListSep
+pRule = try $ (string ":-" >> pWs) *> pPredicate `sepBy` pListSep
 
-pConstraint :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
-pConstraint = char '[' *> pWs *> pConstraintTerm <* pWs <* char ']'
+pConstraint :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
+pConstraint = try $ char '[' *> pWs *> pC <* pWs <* char ']'
  
-pConstraintTerm :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
-pConstraintTerm = pBoolean
-
-pBoolean :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Constraint
-pBoolean = pTrue <|> pFalse
-  where pTrue = string "True" >> return (Boolean True)
-        pFalse = string "False" >> return (Boolean False)
-

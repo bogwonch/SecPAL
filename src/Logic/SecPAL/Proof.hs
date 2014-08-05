@@ -1,7 +1,9 @@
 module Logic.SecPAL.Proof where
 
-import Logic.SecPAL.Language (Assertion, C)
+import Logic.SecPAL.Language (Assertion)
+import Logic.General.Constraints (C)
 import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 import Logic.SecPAL.Context
 import Data.Maybe
 import Data.List

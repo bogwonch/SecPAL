@@ -1,6 +1,7 @@
-module Logic.SecPAL.Named where
+module Logic.General.Named where
   
-import Logic.SecPAL.Language
+import Logic.General.Constraints
+import Logic.General.Entities
 
 class Named a where
     name :: a -> String

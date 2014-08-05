@@ -6,11 +6,14 @@ import Control.Monad (when, forM)
 import Data.Array.IO
 import Data.List
 import Data.Maybe
+import Logic.General.Entities
+import Logic.General.Constraints
 import Logic.SecPAL.AssertionSafety (flat)
 import Logic.SecPAL.Context
-import Logic.SecPAL.Constraints
+import Logic.General.ConstraintEvaluation
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions
 import System.Console.ANSI

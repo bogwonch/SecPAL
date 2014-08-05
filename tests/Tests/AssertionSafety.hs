@@ -1,6 +1,9 @@
 module Tests.AssertionSafety where
 
 import Logic.SecPAL.AssertionSafety
+import Logic.General.Constraints
+import Logic.General.Entities
+import Logic.General.Pretty
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
 

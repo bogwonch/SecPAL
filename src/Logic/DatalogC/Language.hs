@@ -1,11 +1,15 @@
 module Logic.DatalogC.Language where
 
 import Data.List
+import Logic.General.Entities
+import qualified Logic.General.Named as N
+import Logic.General.Constraints
 
 data Clause = Clause{ head       :: Predicate
                     , body       :: [Predicate]
-                    , constraint :: Constraint
+                    , constraint :: C
                     }
+  deriving (Show)
 
 -- A fact is a clause with no body (i.e. it is trivially true)
 fact :: Clause
@@ -23,38 +27,5 @@ rule = Clause{ Logic.DatalogC.Language.head=undefined
              , constraint=Boolean True 
              }
 
-data Predicate = Predicate{ name :: String, args :: [Entity] }
-
-data Entity = Variable String
-            | Constant String
-            deriving (Eq)
-
--- TODO: work out what constraints really are
-data Constraint = Boolean Bool
-
--- Pretty printing
-instance Show Clause where
-  show f
-    | isFact f  = show (Logic.DatalogC.Language.head f) ++ "."
-    | otherwise = 
-      show (Logic.DatalogC.Language.head f) 
-           ++ " :- " 
-           ++ intercalate ", " (map show (body f)) 
-           ++ "."
-
-instance Show Predicate where
-  show p =
-    name p ++ arity ++ arguments
-    where
-      arity     = "/" ++ (show . length . args $ p)
-      arguments = "(" ++ intercalate ", " (map show (args p)) ++ ")"
-
-instance Show Constraint where
-  show (Boolean True) = ""
-  show x = " ["++show' x++"]"
-    where show' (Boolean False) = "False"
-          show' (Boolean True) = error "wtf?"
-
-instance Show Entity where
- show (Variable x) = x
- show (Constant x) = x
+data Predicate = Predicate{ name :: String, args :: [E] }
+  deriving (Show)

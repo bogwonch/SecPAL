@@ -3,6 +3,7 @@ module Logic.SecPAL.Context where
 import Logic.SecPAL.Language
 import Logic.SecPAL.Substitutions
 import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 
 data Context = Context { ac :: AC
                        , d :: D

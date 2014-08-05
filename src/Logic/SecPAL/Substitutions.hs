@@ -1,7 +1,9 @@
 module Logic.SecPAL.Substitutions where
 
+import Logic.General.Entities
+import Logic.General.Constraints
 import Logic.SecPAL.Language
-import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 import Data.Maybe
 
 data Substitution = Substitute{ var::E, for::E }

@@ -1,23 +1,23 @@
 module Tests.ArbitraryDatalog where
 
+import Logic.General.Entities as D
+import Logic.General.Parser
+import Logic.DatalogC.Pretty
+import Logic.General.Pretty
 import Logic.DatalogC.Language as D
 import Logic.DatalogC.Parser
 import Logic.DatalogC.Safety
 import Control.Applicative
 import Test.QuickCheck
 import Tests.ArbitraryParser ( qc
-                             , arbitraryUpper
-                             , arbitraryLower
                              , arbitraryTokenChar
+                             , propParsable
                              )
 import Tests.Testable hiding (Testable)
 import Text.Parsec
 
-propParsable :: Show a => Parsec String () a -> a -> Bool
-propParsable parser datalog = 
-  case parse parser "" (show datalog) of 
-    (Left _)         -> False
-    (Right datalog') -> show datalog == show datalog'
+import Debug.Trace
+import System.IO.Unsafe
 
 testDatalogQC :: IO [Test]
 testDatalogQC = sequence [ qc "Entity" propParsableEntity
@@ -25,14 +25,8 @@ testDatalogQC = sequence [ qc "Entity" propParsableEntity
                          , qc "Clause" propParsableClause
                          ]
 
-propParsableEntity :: D.Entity -> Bool
-propParsableEntity = propParsable pEntity
-
-instance Arbitrary Entity where
-  arbitrary = oneof [ Variable <$> ((:) <$> arbitraryLower <*> listOf arbitraryTokenChar)
-                    , Constant <$> ((:) <$> arbitraryUpper <*> listOf arbitraryTokenChar)
-                    -- TODO: String constants
-                    ]
+propParsableEntity :: D.E -> Bool
+propParsableEntity = propParsable pE
 
 propParsablePredicate :: D.Predicate -> Bool
 propParsablePredicate = propParsable pPredicate
@@ -45,6 +39,3 @@ propParsableClause = propParsable pClause
 
 instance Arbitrary Clause where
   arbitrary = suchThat (Clause <$> arbitrary <*> arbitrary <*> arbitrary) safe 
-
-instance Arbitrary Constraint where
-  arbitrary = oneof [ Boolean <$> arbitrary ]

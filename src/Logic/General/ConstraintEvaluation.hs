@@ -1,16 +1,15 @@
-module Logic.SecPAL.Constraints where
+module Logic.General.ConstraintEvaluation where
 
 import Data.Char
+import Logic.General.Constraints
+import Logic.General.Parser
+import Logic.General.Pretty
 import Logic.SecPAL.Context
-import Logic.SecPAL.Language
-import qualified Logic.SecPAL.Named as N
-import Logic.SecPAL.Parser
+import qualified Logic.General.Named as N
 import Logic.SecPAL.Pretty
 import System.IO
 import Text.Parsec
 import Language.Haskell.Interpreter 
-
-
 
 evaluate :: Context -> Ec -> IO Ec
 evaluate ctx v = 
@@ -43,6 +42,9 @@ functionInterpreter ctx (Apply f xs) = do
   -- Parse the answer
   liftIO (ans >>= valueParser ctx (N.name f))
 
+functionInterpreter _ (Entity _) = fail "attempted to interpret entity as a function"
+functionInterpreter _ (Value _) = fail "attempted to interpret value as a function"
+
 valueParser :: Context -> SourceName -> String -> IO Ec
 valueParser _ n str =
   case parse pEc n str of
@@ -52,6 +54,7 @@ valueParser _ n str =
   
 getPkgName :: String -> String
 getPkgName (f:fs) = toUpper f : fs
+getPkgName [] = error "nameless package"
 
 eShow :: Ec -> String
 eShow e@(Entity _) = '"': pShow e ++ "\""

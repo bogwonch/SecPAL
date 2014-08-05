@@ -2,6 +2,7 @@ module Tests.Evaluation where
 
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
+import Logic.General.Pretty
 import Logic.SecPAL.Parser
 import Text.Parsec
 import Logic.SecPAL.Evaluable

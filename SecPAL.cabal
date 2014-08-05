@@ -34,15 +34,31 @@ executable secpal
                     filepath,
                     hint
 
-  other-modules:    Logic.SecPAL.AssertionSafety
-                    Logic.SecPAL.Language
-                    Logic.SecPAL.Pretty
-                    Logic.SecPAL.Named
-                    Logic.SecPAL.Vars
-                    Logic.SecPAL.Substitutions
+  other-modules:    Logic.DatalogC.Fresh
+                    Logic.DatalogC.Language
+                    Logic.DatalogC.Parser
+                    Logic.DatalogC.Pretty
+                    Logic.DatalogC.Safety
+                    Logic.DatalogC.Vars
+                    Logic.General.ConstraintEvaluation
+                    Logic.General.Constraints
+                    Logic.General.Entities
+                    Logic.General.Fresh
+                    Logic.General.Named
+                    Logic.General.Parser
+                    Logic.General.Pretty
+                    Logic.General.Vars
+                    Logic.SecPAL.AssertionSafety
+                    Logic.SecPAL.Base
                     Logic.SecPAL.Context
+                    Logic.SecPAL.DatalogC
                     Logic.SecPAL.Evaluable
+                    Logic.SecPAL.Language
                     Logic.SecPAL.Parser
+                    Logic.SecPAL.Pretty
+                    Logic.SecPAL.Proof
+                    Logic.SecPAL.Substitutions
+
 
 
   build-depends:    base >= 4.5 && < 5
@@ -51,8 +67,10 @@ executable datalogc
   main-is: DatalogC.hs
   hs-source-dirs: src
   build-depends: base, parsec, readline, filepath
-  other-modules: Logic.DatalogC.Language
+  other-modules: Logic.DatalogC.Fresh
+                 Logic.DatalogC.Language
                  Logic.DatalogC.Parser
+                 Logic.DatalogC.Pretty
                  Logic.DatalogC.Safety
                  Logic.DatalogC.Vars
 

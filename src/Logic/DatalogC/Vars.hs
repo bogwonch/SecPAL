@@ -1,13 +1,14 @@
 module Logic.DatalogC.Vars where
 
+import Logic.General.Entities
 import qualified Logic.DatalogC.Language as L
 
 class Vars a where
-  vars :: a -> [L.Entity]
+  vars :: a -> [E]
 
-instance Vars L.Entity where
-  vars e@(L.Variable _) = [e]
-  vars (L.Constant _) = []
+instance Vars E where
+  vars e@Variable{}  = [e]
+  vars Constant{} = []
 
 instance Vars L.Constraint where
   vars _ = [] -- TODO: Constraints

@@ -1,6 +1,9 @@
-module Logic.SecPAL.Vars where
+module Logic.General.Vars where
 
+import Logic.General.Entities
+import Logic.General.Constraints
 import Logic.SecPAL.Language
+import qualified Logic.DatalogC.Language as L
 
 class Vars a where
     vars :: a -> [E]
@@ -41,3 +44,12 @@ instance Vars C where
     vars (Equals e1 e2) = vars e1 ++ vars e2
     vars (Not c) = vars c
     vars (Conj c1 c2) = vars c1 ++ vars c2
+
+instance Vars L.Predicate where
+  vars L.Predicate{ L.args=as } = concatMap vars as
+
+instance Vars L.Clause where 
+  vars c = vars (L.head c) ++ vars (L.body c) ++ vars (L.constraint c)
+
+instance Vars x => Vars [x] where
+  vars = concatMap vars
