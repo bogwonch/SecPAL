@@ -1,4 +1,4 @@
-module Logic.DatalogC.Pretty where
+module Logic.DatalogC.Pretty (pShow) where
 
 import Logic.General.Pretty
 import Logic.General.Constraints

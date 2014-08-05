@@ -1,4 +1,4 @@
-module Logic.SecPAL.Pretty where
+module Logic.SecPAL.Pretty (pShow) where
 
 import Logic.General.Constraints
 import Logic.General.Pretty
