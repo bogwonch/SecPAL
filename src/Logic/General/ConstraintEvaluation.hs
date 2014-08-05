@@ -6,7 +6,6 @@ import Logic.General.Parser
 import Logic.General.Pretty
 import Logic.SecPAL.Context
 import qualified Logic.General.Named as N
-import Logic.SecPAL.Pretty
 import System.IO
 import Text.Parsec
 import Language.Haskell.Interpreter 

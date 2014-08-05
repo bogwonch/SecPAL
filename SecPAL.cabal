@@ -32,6 +32,7 @@ executable secpal
                     array,
                     random,
                     filepath,
+                    mtl,
                     hint
 
   other-modules:    Logic.DatalogC.Fresh

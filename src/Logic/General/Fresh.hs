@@ -9,7 +9,7 @@ type Fresh = (String, Integer)
 type FreshState = State Fresh
 
 freshVar :: Fresh -> E
-freshVar (prefix, n) = Variable $ prefix ++ show n
+freshVar (prefix, n) = Variable $ prefix ++ ":" ++ show n
 
 next :: FreshState ()
 next = modify $ second (1+)

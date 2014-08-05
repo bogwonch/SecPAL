@@ -1,8 +1,6 @@
 module Logic.DatalogC.Language where
 
-import Data.List
 import Logic.General.Entities
-import qualified Logic.General.Named as N
 import Logic.General.Constraints
 
 data Clause = Clause{ head       :: Predicate

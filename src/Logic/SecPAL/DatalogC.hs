@@ -1,22 +1,46 @@
-module Logic.SecPAL.DatalogC where
+module Logic.SecPAL.DatalogC (toDatalog) where
 
 import Control.Applicative
 import Data.List
 import Logic.General.Entities
+import Logic.General.Constraints
 import Logic.General.Fresh
 import Logic.SecPAL.AssertionSafety
+import Logic.SecPAL.Pretty
+import Control.Monad.State
 import qualified Logic.SecPAL.Language as SP
+import qualified Logic.DatalogC.Language as D
+
 
 data Says = Says E E SP.Fact
-data Rule = Rule Says [Says] SP.C
+data Rule = Rule Says [Says] C
+
+class Datalogable x where
+  toDatalog :: x -> [D.Clause]
 
 instance Show Says where
-  show (Says a (Constant "secpal:zero") f) = show a++" says_0 "++show f
-  show (Says a (Constant "secpal:inf") f) = show a++" says_inf "++show f
-  show (Says a _ f) = show a++" says_k "++show f
+  show (Says a (Constant "_sp:zero") f) = pShow a++" says_0 "++pShow f
+  show (Says a (Constant "_sp:infinity") f) = pShow a++" says_inf "++pShow f
+  show (Says a _ f) = pShow a++" says_k "++pShow f
 
 instance Show Rule where
   show (Rule h bs _) = show h++" <- "++intercalate ", " (map show bs)++"."
+
+instance Datalogable Rule where
+  toDatalog (Rule h bs c) = [ D.Clause{ D.head       = h'
+                                      , D.body       = b'
+                                      , D.constraint = c
+                                      }
+                            ]
+    where 
+      h' = toPredicate h
+      b' = map toPredicate bs
+      toPredicate (Says a k f) = D.Predicate{ D.name = "says_" ++ factToName f
+                                            , D.args = [a,k]   ++ factToArgs f
+                                            }
+
+instance Datalogable SP.Assertion where 
+  toDatalog = concatMap toDatalog . fst . translate
 
 fact :: Int -> SP.Assertion -> SP.Fact
 fact 0 = SP.fact . SP.says
@@ -32,7 +56,7 @@ vpToName :: SP.VerbPhrase -> String
 vpToName SP.Predicate{ SP.predicate=name } = name
 vpToName SP.CanActAs{} = "can_act_as"
 vpToName SP.CanSay{ SP.delegation=d, SP.what=f } =
-  let depth = if d==SP.Zero then "zero" else "infinity"
+  let depth = if d==SP.Zero then "zero_" else "infinity_"
   in "can_say_"++depth++factToName f
 
 vpToArgs :: SP.VerbPhrase -> [E]
@@ -40,11 +64,15 @@ vpToArgs SP.Predicate{ SP.args=es } = es
 vpToArgs SP.CanActAs{ SP.whom=e } = [e]
 vpToArgs SP.CanSay{ SP.what=f } = factToArgs f
 
-translate :: SP.Assertion -> FreshState [Rule]
-translate a
-  | flat . fact 0 $ a = step1 a
-  | otherwise = undefined
+translate :: SP.Assertion -> ([Rule], Fresh)
+translate = (`runState` ("_fresh", 0) ) . translate'
 
+translate' :: SP.Assertion -> FreshState [Rule]
+translate' a = do 
+  rs <- if flat (fact 0 a)
+          then step1 a
+          else step2 a
+  step3 rs
 
 {- Algorithm 5.2. 
  - The translation of an assertion context AC proceeds as follows:
@@ -84,7 +112,7 @@ step1 x = do
  - where x is a fresh variable.
  -}
 step2 :: SP.Assertion -> FreshState [Rule]
-step2 _ = undefined
+step2 x = concat <$> sequence [step2a x, step2b x]
 
 step2a :: SP.Assertion -> FreshState [Rule]
 step2a = step1
@@ -119,7 +147,7 @@ step2bRule i a k f = do
                                                  , SP.what=f
                                                  }
                               }
-  let r = Rule h [b1,b2] (SP.Boolean True)
+  let r = Rule h [b1,b2] (Boolean True)
   return r
 
 ks :: SP.Assertion -> [SP.D]
@@ -127,8 +155,8 @@ ks SP.Assertion{ SP.says=SP.Claim{ SP.fact=f } }
   = ks' [] f
 
 k0, kInf :: E
-k0   = Constant "secpal:zero"
-kInf = Constant "secpal:infinity"
+k0   = Constant "_sp:zero"
+kInf = Constant "_sp:infinity"
 
 toEnt :: SP.D -> E
 toEnt (SP.Zero)     = k0
@@ -136,7 +164,7 @@ toEnt (SP.Infinity) = kInf
 
 ks' :: [SP.D] -> SP.Fact -> [SP.D]
 ks' xs SP.Fact{ SP.verb=SP.CanSay{ SP.delegation=d, SP.what=w }} =
-  ks' (d:xs) w
+  ks' (xs++[d]) w
 ks' xs SP.Fact{} = xs
 
 
@@ -159,6 +187,6 @@ step3' rule@(Rule (Says a k f@SP.Fact{ SP.subject=e, SP.verb=vp }) _ _) = do
   let b1 = Says a k SP.Fact{ SP.subject=x, SP.verb=SP.CanActAs{ SP.whom=e }}
   let b2 = Says a k f
 
-  return [rule, Rule h [b1,b2] (SP.Boolean True)]
+  return [rule, Rule h [b1,b2] (Boolean True)]
   
 

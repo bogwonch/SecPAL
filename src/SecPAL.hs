@@ -9,7 +9,8 @@ import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Language
 import Logic.SecPAL.Parser
 import Logic.SecPAL.Pretty
-import Logic.General.Pretty
+import Logic.SecPAL.DatalogC
+import Logic.DatalogC.Pretty
 import System.Console.GetOpt
 import System.Console.Readline
 import System.Environment

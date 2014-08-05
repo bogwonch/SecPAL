@@ -13,7 +13,6 @@ import Logic.SecPAL.Context
 import Logic.General.ConstraintEvaluation
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
-import Logic.General.Pretty
 import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions
 import System.Console.ANSI
