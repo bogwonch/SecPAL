@@ -89,7 +89,8 @@ executable tests
                     array,
                     mtl,
                     filepath,
-                    hint
+                    hint,
+                    transformers
 
 
   other-modules:    Tests.TestResults

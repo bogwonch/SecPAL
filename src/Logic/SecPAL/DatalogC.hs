@@ -1,4 +1,4 @@
-module Logic.SecPAL.DatalogC (toDatalog) where
+module Logic.SecPAL.DatalogC where
 
 import Control.Applicative
 import Data.List
@@ -41,6 +41,9 @@ instance Datalogable Rule where
 
 instance Datalogable SP.Assertion where 
   toDatalog = concatMap toDatalog . fst . translate
+
+instance Datalogable SP.AC where
+  toDatalog (SP.AC ac) = concatMap toDatalog ac
 
 fact :: Int -> SP.Assertion -> SP.Fact
 fact 0 = SP.fact . SP.says
@@ -181,6 +184,7 @@ step3 :: [Rule] -> FreshState [Rule]
 step3 = (concat <$>) . mapM step3'
 
 step3' :: Rule -> FreshState [Rule]
+step3' rule@(Rule _ [] _) = return [rule]
 step3' rule@(Rule (Says a k f@SP.Fact{ SP.subject=e, SP.verb=vp }) _ _) = do
   x <- getFresh
   let h = Says a k SP.Fact{ SP.subject=x, SP.verb=vp }

@@ -1,12 +1,18 @@
 module Logic.General.Entities where
 
-data E = Variable { varName :: String }
-       | Constant { constName :: String }
+import Logic.General.Types
+
+data E = Variable { varName :: String, varType :: String }
+       | Constant { constName :: String, constType :: String }
        deriving (Show)
 
 instance Eq E where
-    (Variable _) == (Constant _) = False
-    (Constant _) == (Variable _) = False
-    (Variable x) == (Variable y) = x == y
-    (Constant x) == (Constant y) = x == y
+    (Variable _ _) == (Constant _ _) = False
+    (Constant _ _) == (Variable _ _) = False
+    (Variable x _) == (Variable y _) = x == y
+    (Constant x _) == (Constant y _) = x == y
+
+instance Typed E where
+  typeof Variable{ varType   = t } = t
+  typeof Constant{ constType = t } = t
 

@@ -16,8 +16,8 @@ instance PShow a => PShow [a] where
 
 
 instance PShow E where
-  pShow (Variable n) = n
-  pShow (Constant n) = n
+  pShow (Variable n _) = n
+  pShow (Constant n _) = n
 
 instance PShow F where
   pShow (F name) = name

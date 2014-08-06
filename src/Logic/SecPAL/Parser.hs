@@ -111,6 +111,6 @@ pAssertionUnsafe = do
 
 
 pAC :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m AC
-pAC = liftM AC (pAssertion `sepBy` spaces)
+pAC = liftM AC (pAssertion `sepBy` pWs)
 
 

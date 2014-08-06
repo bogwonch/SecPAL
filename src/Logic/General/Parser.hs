@@ -5,10 +5,15 @@
 module Logic.General.Parser where
 
 import Control.Applicative ((<*), (<$>), (*>))
-import Control.Monad (void)
+import Control.Monad (void, unless)
 import Logic.General.Entities
 import Logic.General.Constraints
 import Text.Parsec
+import System.IO
+import System.IO.Unsafe (unsafePerformIO)
+
+warning :: forall (m :: * -> *). Monad m => String -> m ()
+warning = (return $!) . unsafePerformIO . hPutStrLn stderr . ("%%% WARNING: "++)
 
 pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
 pTokenChar = alphaNum <|> oneOf "-_'" <?> "token character"
@@ -16,20 +21,31 @@ pTokenChar = alphaNum <|> oneOf "-_'" <?> "token character"
 pE :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pE = pVariable <|> pConstant <|> pString <?> "entity"
 
+pType :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
+pType = option [] (try $ many1 pTokenChar <* char ':')
+
 pVariable :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pVariable = do
+  t <- pType
+  u <- many (char '_')
   n <- lower
   ns <- many pTokenChar
-  return Variable{varName=n:ns}
+  let var = if null t then u++n:ns else t++":"++ u++n:ns
+  _ <- unless (null u) (warning "don't start variables with an underscore")
+  return Variable{varName=var, varType=t}
 
 pConstant :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pConstant = do
+  t <- pType
+  u <- many (char '_')
   n <- upper
   ns <- many pTokenChar
-  return Constant{constName=n:ns}
+  let var = if null t then u++n:ns else t++":"++ u++n:ns
+  _ <- unless (null u) (warning "don't start constants with an underscore")
+  return Constant{constName=var, constType=t}
 
 pString :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
-pString = Constant <$> (char '"' *> many quotedChar <* char '"')
+pString = (`Constant` []) <$> (char '"' *> many quotedChar <* char '"')
   where quotedChar = try (string "\\\"" >> return '"') <|> noneOf "\""
 
 pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String

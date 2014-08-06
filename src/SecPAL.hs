@@ -20,20 +20,22 @@ import Text.Parsec
 import Text.Parsec.String
 
 data Options = Options
-  { optACFile  :: Maybe String
-  , optDebug   :: Bool
-  , optHelp    :: Bool
-  , optVerbose :: Bool
-  , optCheck   :: Bool
+  { optACFile   :: Maybe String
+  , optDebug    :: Bool
+  , optHelp     :: Bool
+  , optVerbose  :: Bool
+  , optCheck    :: Bool
+  , optPDatalog :: Bool
   } deriving Show
 
 defaultOptions :: Options
-defaultOptions = Options
-  { optACFile  = Nothing
-  , optDebug   = False
-  , optHelp    = False
-  , optVerbose = False
-  , optCheck   = False
+defaultOptions  = Options
+  { optACFile   = Nothing
+  , optDebug    = False
+  , optHelp     = False
+  , optVerbose  = False
+  , optCheck    = False
+  , optPDatalog = False
   }
 
 options :: [OptDescr (Options -> IO Options)] 
@@ -53,6 +55,9 @@ options =
   , Option "c" ["check"]
       (NoArg (\opts -> return opts{optCheck = True}))
       "just check the file: no prompt"
+  , Option "p" ["print-datalog"]
+      (NoArg (\opts -> return opts{optPDatalog = True}))
+      "just print the DatalogC translation of the SecPAL"
   ]
 
 usage :: IO ()
@@ -73,10 +78,11 @@ main = do
   -- Here we thread startOptions through all supplied option actions
   opts <- foldl (>>=) (return defaultOptions) actions
 
-  let Options { optACFile  = acfile
-              , optHelp    = help
-              , optVerbose = verbose
-              , optCheck   = checking
+  let Options { optACFile   = acfile
+              , optHelp     = help
+              , optVerbose  = verbose
+              , optCheck    = checking
+              , optPDatalog = pdatalog
               } = opts
 
   unless (null errors)    $ mapM_ (hPutStrLn stderr) errors >> exitFailure
@@ -93,6 +99,10 @@ main = do
     mapM_ (putStrLn . ("  "++) . pShow) theAC 
     putStrLn ""
 
+  when pdatalog $ do
+    putStrLn "% vim: set ft=prolog:"
+    mapM_ (mapM_ (putStrLn . pShow) . toDatalog) theAC
+    exitSuccess
 
   unless checking $ do
     replWelcome

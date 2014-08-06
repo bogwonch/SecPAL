@@ -1,11 +1,12 @@
+{-# LANGUAGE RankNTypes, FlexibleContexts #-}
 module Tests.AssertionSafety where
 
 import Logic.SecPAL.AssertionSafety
-import Logic.General.Constraints
-import Logic.General.Entities
-import Logic.General.Pretty
 import Logic.SecPAL.Language
-import Logic.SecPAL.Pretty
+import Logic.General.Pretty
+import Text.Parsec
+import Logic.SecPAL.Parser
+import Data.Functor.Identity
 
 import Tests.Testable
 
@@ -13,22 +14,26 @@ testFlatness :: [Test]
 testFlatness = [ testIsFlat1
                , testIsFlat2
                ]
+make :: forall s t c. Stream s Identity t => Parsec s () c -> s -> c
+make p str = case parse p "" str of
+  (Left err) -> error . show $ err
+  (Right a) -> a
+
+makeFact :: String -> Fact
+makeFact = make pFact
+
+makeAssertion :: String -> Assertion
+makeAssertion = make pAssertionUnsafe
 
 testIsFlat1 :: Test 
 testIsFlat1 = 
-  let secpal = Fact { subject = Constant "Bob"
-                    , verb = Predicate "can read" [Variable "f"]
-                    } 
+  let secpal = makeFact "Bob can-read(f)"
   in
     Test{ description=pShow secpal, result=test .flat $ secpal }
 
 testIsFlat2 :: Test 
 testIsFlat2 = 
-  let secpal = Fact { subject = Constant "Charlie"
-                    , verb = CanSay Zero Fact { subject = Constant "Bob"
-                                              , verb = Predicate "can read" [Variable "f"]
-                                              }
-                    }
+  let secpal = makeFact "Charlie can-say 0 Bob can-read(f)"
   in
     Test{ description=pShow secpal, result=test . not . flat $ secpal }
 
@@ -51,145 +56,61 @@ testUnsafe = [ testUnSafe1
 
 testSafe1 :: Test 
 testSafe1 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (Predicate "can read" [ Constant "Foo" ])) 
-                        [] (Boolean True))
+  let secpal = makeAssertion "A says B can-read(Foo)."
   in Test{ description=pShow secpal, result=test . safe $ secpal }
 
 testSafe2 :: Test 
 testSafe2 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (Predicate "can read" [ Constant "Foo" ])) 
-                        [ Fact (Constant "B")
-                               (Predicate "can" [Variable "x", Variable "y"])
-                        ] (Boolean True))
+  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe3 :: Test 
 testSafe3 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (Predicate "can read" [ Constant "Foo" ])) 
-                        [ Fact (Constant "B")
-                               (Predicate "can" [Variable "x", Variable "y"])
-                        ] 
-                        (Not (Equals (Entity $ Variable "x") 
-                                     (Entity $ Variable "y"))))
+  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y); ! x = y."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 
 testSafe4 :: Test 
 testSafe4 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (Predicate "can" [ Variable "x" 
-                                               , Variable "y"
-                                               ])) 
-                        [ Fact (Constant "B")
-                               (Predicate "can" [Variable "x", Variable "y"])
-                        ] (Boolean True))
-              
+  let secpal = makeAssertion "A says B can(x,y) if B can(x,y)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe5 :: Test 
 testSafe5 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Variable "z") 
-                              (Predicate "can" [ Variable "x" 
-                                               , Variable "y"
-                                               ])) 
-                        [ Fact (Variable "z")
-                               (Predicate "can" [Variable "x", Constant "Foo"])
-                        , Fact (Variable "z")
-                               (Predicate "can read" [Variable "y"])
-                        ] (Boolean True))
-              
+  let secpal = makeAssertion "A says z can(x,y) if z can(x,Foo), z can-read(y)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe6 :: Test 
 testSafe6 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (CanSay Zero 
-                                      (Fact (Variable "x")
-                                            (Predicate "can" [ Variable "y"
-                                                             , Variable "z"
-                                                             ]))))
-                        [] (Boolean True))
+  let secpal = makeAssertion "A says B can-say 0 x can(y,z)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
  
 testUnSafe1 :: Test 
 testUnSafe1 =
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (Predicate "can" [ Variable "x"
-                                               , Constant "Foo"
-                                               ])) 
-                        [] (Boolean True))
+  let secpal = makeAssertion "A says B can(x,Foo)."
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 testUnSafe2 :: Test 
 testUnSafe2 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Variable "z") 
-                              (Predicate "can read" [ Constant "Foo" ])) 
-                        [ Fact (Constant "B")
-                               (Predicate "can" [Variable "x", Variable "y"])
-                        ] (Boolean True))
+  let secpal = makeAssertion "A says z can-read(Foo) if B can(x,y)."
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 testUnSafe3 :: Test 
 testUnSafe3 = 
-  let secpal = Assertion (Constant "A") 
-                         (Claim (Fact (Constant "B") 
-                                      (Predicate "can read" [ Constant "Foo" ])) 
-                                [ Fact (Constant "B")
-                                       (Predicate "can" [Variable "x", Variable "y"])
-                                ] 
-                                (Not (Equals (Entity $ Variable "w") 
-                                             (Entity $ Variable "y"))))
-              
+  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y); ! w = y."
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 testUnSafe4 :: Test 
 testUnSafe4 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Constant "B") 
-                              (Predicate "can" [ Variable "x" 
-                                               , Variable "y"
-                                               ])) 
-                        [ Fact (Constant "B")
-                               (CanSay Zero
-                                       (Fact (Constant "C")
-                                             (Predicate "can" [Variable "x", Variable "y"])))
-                        ] (Boolean True))
+  let secpal = makeAssertion "A says B can(x,y) if B can-say 0 C can(x,y)."
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 testUnSafe5 :: Test 
 testUnSafe5 = 
-  let secpal = Assertion 
-                 (Constant "A") 
-                 (Claim (Fact (Variable "w") 
-                              (CanSay Zero 
-                                      (Fact (Variable "x")
-                                            (Predicate "can" [ Variable "y"
-                                                             , Variable "z"
-                                                             ]))))
-                        [] (Boolean True))
+  let secpal = makeAssertion "A says w can-say 0 x can(y,z)."
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
@@ -206,84 +127,37 @@ testESSoS = [ agTest1
 
 agTest1 :: Test 
 agTest1 = 
-  let secpal = Assertion 
---                 (Constant "Phone")
-                 (Variable "anyone")
-                 (Claim (Fact (Variable "app")
-                              (Predicate "meets" [Variable "policy"]))
-                        [ Fact (Variable "evidence")
-                               (Predicate "pShows meets"
-                                          [ Variable "app"
-                                          , Variable "policy"
-                                          ])
-                        ] (Boolean True))
+  let secpal = makeAssertion "anyone says app meets(policy) if evidence shows-meets(app, policy)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest2 :: Test 
 agTest2 =
-  let secpal = Assertion
-                 (Constant "Phone")
-                 (Claim (Fact (Variable "app")
-                              (Predicate "installable" []))
-                        [ Fact (Variable "app")
-                               (Predicate "meets" [Constant "NotMalware"])
-                        , Fact (Variable "app")
-                               (Predicate "meets" [Constant "NoInfoLeaks"])
-                        ] (Boolean True))
+  let secpal = makeAssertion "Phone says app is-installable if app meets(NotMalware), app meets(NoInfoLeaks)."
   in Test{description=pShow secpal, result = test . safe $ secpal }
 
 agTest3 :: Test 
 agTest3 = 
-  let secpal = Assertion
-                 (Constant "Phone")
-                 (Claim (Fact (Constant "Google")
-                              (CanSay Infinity
-                                      (Fact (Variable "app")
-                                            (Predicate "meets" [ Constant "NotMalware" ]))))
-                        [] (Boolean True))
+  let secpal = makeAssertion "Phone says Google can-say inf app meets(NotMalware)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest4 :: Test 
 agTest4 = 
-  let secpal = Assertion
-                 (Constant "Google")
-                 (Claim (Fact (Constant "AVChecker")
-                              (CanSay Zero
-                                      (Fact (Variable "app")
-                                            (Predicate "meets" [ Constant "NotMalware" ]))))
-                        [] (Boolean True))
+  let secpal = makeAssertion "Google says AVChecker can-say 0 app meets(NotMalware)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest5 :: Test 
 agTest5 = 
-  let secpal = Assertion
-                 (Constant "Phone")
-                 (Claim (Fact (Constant "NILInferer")
-                              (CanSay Zero
-                                      (Fact (Variable "app")
-                                            (Predicate "meets" [ Constant "NoInfoLeaks" ]))))
-                        [] (Boolean True))
+  let secpal = makeAssertion "Phone says NILInferer can-say 0 app meets(NoInfoLeaks)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest6 :: Test 
 agTest6 = 
-  let secpal = Assertion
-                 (Constant "AVChecker")
-                 (Claim (Fact (Constant "Game")
-                              (Predicate "meets" [ Constant "NotMalware" ]))
-                        [] (Boolean True))
+  let secpal = makeAssertion "AVChecker says Game meets(NotMalware)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest7 :: Test 
 agTest7 =
-  let secpal = Assertion
-                 (Constant "NilInferer")
-                 (Claim (Fact (Constant "Evidence")
-                              (Predicate "pShows meets"
-                                         [ Constant "Game"
-                                         , Constant "Policy"
-                                         ]))
-                        [] (Boolean True))
+  let secpal = makeAssertion "NILInferer says Evidence shows-meets(Game, Policy)."
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 

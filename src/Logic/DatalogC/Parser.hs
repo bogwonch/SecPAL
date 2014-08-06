@@ -9,11 +9,15 @@ import Logic.General.Parser
 import Logic.General.Constraints
 import Logic.DatalogC.Language as L
 import Logic.DatalogC.Safety
+import Logic.DatalogC.Pretty
 import Text.Parsec
 import Control.Applicative ((*>), (<*))
 import Control.Monad
 import Data.Maybe
 import Data.List
+
+pProgram :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m [Clause]
+pProgram = pClause `sepEndBy` pWs
 
 pToken :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pToken = many1 pTokenChar
@@ -52,9 +56,9 @@ pClause = do
     then return clause
     else fail $
       "unsafe variables ("
-      ++intercalate ", " (map show $ unsafeVars clause)
+      ++intercalate ", " (map pShow $ unsafeVars clause)
       ++") in clause \""
-      ++show clause
+      ++pShow clause
       ++"\""
    
 pRule :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m [Predicate]

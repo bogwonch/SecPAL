@@ -60,11 +60,10 @@ main = do
   when help            $ usage >> exitSuccess
   when (null scripts)  $ usage >> exitFailure
 
-  parsed <- mapM (parseFromFile (many1 pClause)) scripts
+  parsed <- mapM (parseFromFile pProgram) scripts
   let (errs, datalog) = partitionEithers parsed
 
-  traceIO $ "parsed!" ++ show scripts
-  traceIO $ show errs
+  traceIO $ "parsed " ++ show scripts
   unless (null errs) $ mapM_ (hPrint stderr) errs >> exitFailure
 
-  mapM_ print datalog
+  mapM_ (mapM_ (putStrLn . pShow)) datalog

@@ -55,8 +55,8 @@ propParsableE :: E -> Bool
 propParsableE = propParsable pE
 
 instance Arbitrary E where
-    arbitrary = oneof [ Variable <$> ((:) <$> arbitraryLower <*> listOf arbitraryTokenChar)
-                      , Constant <$> ((:) <$> arbitraryUpper <*> listOf arbitraryTokenChar)
+    arbitrary = oneof [ (`Variable` []) <$> ((:) <$> arbitraryLower <*> listOf arbitraryTokenChar)
+                      , (`Constant` []) <$> ((:) <$> arbitraryUpper <*> listOf arbitraryTokenChar)
                       ]
 
 propParsableD :: D -> Bool 

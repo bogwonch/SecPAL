@@ -13,8 +13,8 @@ ground :: Vars a => a -> Bool
 ground = (==0) . length . vars
 
 instance Vars E where
-    vars e@(Variable _) = [e]
-    vars (Constant _) = []
+    vars e@Variable{} = [e]
+    vars Constant{} = []
 
 instance Vars VerbPhrase where
     vars Predicate {args=a} = concatMap vars a

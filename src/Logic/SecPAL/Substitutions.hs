@@ -34,7 +34,7 @@ instance Substitutive E where
   a@(Constant{}) ==? b@(Variable{}) = Just [b `rename` a]
   a@(Variable{}) ==? b@(Constant{}) = Just [a `rename` b]
 
-  (Variable _) ==? (Variable _) = Just []
+  Variable{} ==? Variable{} = Just []
 
 -- There is almost certainly a better way using applicative
 instance Substitutive VerbPhrase where
