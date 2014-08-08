@@ -19,8 +19,8 @@ class Datalogable x where
   toDatalog :: x -> [D.Clause]
 
 instance Show Says where
-  show (Says a (Constant "_sp:zero") f) = pShow a++" says_0 "++pShow f
-  show (Says a (Constant "_sp:infinity") f) = pShow a++" says_inf "++pShow f
+  show (Says a (Constant{constName="_sp:zero"}) f) = pShow a++" says_0 "++pShow f
+  show (Says a (Constant{constName="_sp:infinity"}) f) = pShow a++" says_inf "++pShow f
   show (Says a _ f) = pShow a++" says_k "++pShow f
 
 instance Show Rule where
@@ -158,8 +158,8 @@ ks SP.Assertion{ SP.says=SP.Claim{ SP.fact=f } }
   = ks' [] f
 
 k0, kInf :: E
-k0   = Constant "_sp:zero"
-kInf = Constant "_sp:infinity"
+k0   = Constant{ constName="_sp:zero", constType="_sp" }
+kInf = Constant{ constName="_sp:infinity", constType="_sp" }
 
 toEnt :: SP.D -> E
 toEnt (SP.Zero)     = k0

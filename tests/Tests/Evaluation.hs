@@ -191,7 +191,7 @@ testESSoSExample =
 testHasPermission :: Test 
 testHasPermission = 
   let q  = makeAssertion "User says App can-access-internet."
-      a1 = makeAssertionUnsafe "anyone says app can-access-internet; permissionsCheck(app, \"INTERNET\") = True."
+      a1 = makeAssertionUnsafe "anyone says app can-access-internet; permissionsCheck(apk:app, \"INTERNET\") = True."
       ctx = stdCtx{ac=AC [a1]}
       prf = unsafePerformIO $ ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -202,7 +202,7 @@ testHasPermission =
 testHasntPermission :: Test 
 testHasntPermission = 
   let q  = makeAssertion "User says App cannot-access-internet."
-      a1 = makeAssertionUnsafe "anyone says app cannot-access-internet; permissionsCheck(app, \"INTERNET\") = False."
+      a1 = makeAssertionUnsafe "anyone says app cannot-access-internet; permissionsCheck(apk:app, \"INTERNET\") = False."
       ctx = stdCtx{ac=AC [a1]}
       prf = unsafePerformIO $ ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf
@@ -213,7 +213,7 @@ testHasntPermission =
 testHasntPermission2 :: Test 
 testHasntPermission2 = 
   let q  = makeAssertion "User says App cannot-dance."
-      a1 = makeAssertionUnsafe "anyone says app cannot-dance; permissionsCheck(app, \"BOOGIE\") = False."
+      a1 = makeAssertionUnsafe "anyone says app cannot-dance; permissionsCheck(apk:app, \"BOOGIE\") = False."
       ctx = stdCtx{ac=AC [a1]}
       prf = unsafePerformIO $ ctx ||- q
       pPrf = maybe "" (\p -> '\n':pShow p) prf

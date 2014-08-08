@@ -16,3 +16,7 @@ instance Typed E where
   typeof Variable{ varType   = t } = t
   typeof Constant{ constType = t } = t
 
+  removeType v@Variable{ varName=n }   = v{ varName=removeType n,   varType=none }
+  removeType c@Constant{ constName=n } = c{ constName=removeType n, constType=none }
+
+
