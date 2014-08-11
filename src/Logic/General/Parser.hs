@@ -19,7 +19,7 @@ pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
 pTokenChar = alphaNum <|> oneOf "-_'" <?> "token character"
 
 pE :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
-pE = pVariable <|> pConstant <|> pString <?> "entity"
+pE = try pVariable <|> try pConstant <|> pString <?> "entity"
 
 pType :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
 pType = option [] (try $ many1 pTokenChar <* char ':')
