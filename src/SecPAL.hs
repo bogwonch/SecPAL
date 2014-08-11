@@ -8,6 +8,7 @@ import Logic.SecPAL.Context
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Language
 import Logic.SecPAL.Parser
+import Logic.SecPAL.Proof
 import Logic.SecPAL.AssertionSafety
 import Logic.SecPAL.Pretty
 import qualified Logic.SecPAL.Query as Q
@@ -198,12 +199,16 @@ runQuery c q verbose debugging =
   let ctx = stdCtx{ac=AC c, debug=debugging}
   in if Q.hasExistentials q
        then runExistentialQuery ctx q verbose debugging
-       else runAssertion ctx (Q.query q) verbose debugging
+       else do 
+          p <- runAssertion ctx (Q.query q) verbose debugging 
+          printResult verbose debugging p
 
-runAssertion :: Context  -> Assertion -> Bool -> Bool -> IO ()
+runAssertion :: Context -> Assertion -> Bool -> Bool -> IO (Maybe (Proof Assertion))
 runAssertion ctx a verbose _ = do
   unless (safe a) ( fail $ "query "++pShow a++" is unsafe" )
-  decision <- ctx ||- a
+  ctx ||- a
+
+printResult verbose debugging decision =
   case decision of
     Nothing      -> putStrLn "! No."
     (Just proof) -> do when verbose $ (putStrLn . pShow) proof 
@@ -215,9 +220,12 @@ runExistentialQuery ctx q verbose debugging = do
   let ss = Q.getSubs (Q.existentials . Q.options $ q') 
   let a = Q.query q'
   let as = [ (a `S.subAll` s, s) | s <- ss ]
-  mapM_ (\(a', s') -> do
-           putStrLn $ pShow s' ++ " ?- " ++ pShow a
-           runAssertion ctx a' verbose debugging)
-        as
+  mapM_ (runExistentialQuery' verbose debugging ctx) as
 
+runExistentialQuery' verbose debugging ctx (a,s) = do
+  decision <- runAssertion ctx a verbose debugging
+  when (isJust decision) $ do
+    putStrLn $ pShow s ++ " ?- " ++ pShow a
+    printResult verbose debugging decision
+  return ()
 
