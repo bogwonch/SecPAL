@@ -8,7 +8,10 @@ import Logic.SecPAL.Context
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Language
 import Logic.SecPAL.Parser
+import Logic.SecPAL.AssertionSafety
 import Logic.SecPAL.Pretty
+import qualified Logic.SecPAL.Query as Q
+import qualified Logic.SecPAL.Substitutions as S
 import Logic.SecPAL.DatalogC
 import Logic.DatalogC.Pretty
 import System.Console.GetOpt
@@ -148,6 +151,8 @@ repl opts c = do
     Just ":help" -> doHelp
     Just "?"     -> doHelp
 
+    Just "" -> repl opts c
+
     Just query -> doQuery query
 
   where
@@ -173,9 +178,9 @@ repl opts c = do
       recur 
 
     doQuery q = do
-      case parse pAssertion "" q of
+      case parse Q.pQuery "" q of
         (Left err) -> hPutStrLn stderr ("@ " ++ show err)
-        (Right assertion) -> runQuery c assertion (optVerbose opts) (optDebug opts)
+        (Right query) -> runQuery c query (optVerbose opts) (optDebug opts)
       recur
 
 
@@ -188,14 +193,31 @@ repl opts c = do
     doSetNotDebug = repl opts{optDebug = False} c
 
 
-runQuery :: (PShow x, Evaluable x) => [Assertion] -> x -> Bool -> Bool -> IO () 
-runQuery c q verbose debugging = do
+runQuery :: [Assertion] -> Q.Query -> Bool -> Bool -> IO () 
+runQuery c q verbose debugging = 
   let ctx = stdCtx{ac=AC c, debug=debugging}
-  decision <- ctx ||- q
+  in if Q.hasExistentials q
+       then runExistentialQuery ctx q verbose debugging
+       else runAssertion ctx (Q.query q) verbose debugging
+
+runAssertion :: Context  -> Assertion -> Bool -> Bool -> IO ()
+runAssertion ctx a verbose _ = do
+  unless (safe a) ( fail $ "query "++pShow a++" is unsafe" )
+  decision <- ctx ||- a
   case decision of
     Nothing      -> putStrLn "! No."
     (Just proof) -> do when verbose $ (putStrLn . pShow) proof 
                        unless verbose $ putStrLn "! Yes."
 
+runExistentialQuery :: Context  -> Q.Query -> Bool -> Bool -> IO ()
+runExistentialQuery ctx q verbose debugging = do
+  q' <- Q.populateExistentials q
+  let ss = Q.getSubs (Q.existentials . Q.options $ q') 
+  let a = Q.query q'
+  let as = [ (a `S.subAll` s, s) | s <- ss ]
+  mapM_ (\(a', s') -> do
+           putStrLn $ pShow s' ++ " ?- " ++ pShow a
+           runAssertion ctx a' verbose debugging)
+        as
 
 

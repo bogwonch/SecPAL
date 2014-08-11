@@ -23,7 +23,7 @@ instance Typed String where
 
   removeType str =
     case elemIndex ':' str of
-      (Just idx) -> let (_, ':':str') = idx `splitAt` str in str'
+      (Just idx) -> let (_,':':str') = idx `splitAt` str in str'
       Nothing    -> str
 
 
