@@ -48,11 +48,13 @@ pString :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pString = (`Constant` []) <$> (char '"' *> many quotedChar <* char '"')
   where quotedChar = try (string "\\\"" >> return '"') <|> noneOf "\""
 
-pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
-pComment = char '%' *> manyTill anyChar (char '\n') <?> "comment"
+pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
+pComment = do { char '%' ; manyTill anyChar (char '\n') ; return () } <?> "comment"
 
 pWs :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
-pWs = void $ spaces >> optional pComment 
+pWs = void (many $ try pWs')
+
+pWs' = pComment <|> void (many1 space) <?> "whitespace"
 
 pListSep :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
 pListSep = try $ pWs *> char ',' <* pWs

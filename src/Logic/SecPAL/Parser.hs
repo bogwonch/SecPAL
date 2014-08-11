@@ -5,13 +5,14 @@
 module Logic.SecPAL.Parser where
 
 import Control.Monad 
+import Control.Applicative ((*>))
 import Logic.General.Entities
 import Logic.General.Constraints
 import Logic.General.Parser
 import Logic.SecPAL.AssertionSafety
 import Logic.SecPAL.Language
 import Logic.General.Pretty
-import Logic.SecPAL.Pretty
+import Logic.SecPAL.Pretty()
 import Text.Parsec
 
 pD :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m D
@@ -101,16 +102,17 @@ pAssertion = do
 
 pAssertionUnsafe :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Assertion
 pAssertionUnsafe = do
+  pWs
   e <- pE
   _ <- string " says "
   c <- pClaim
   spaces
   _ <- char '.'
-  spaces
+  pWs
   return Assertion{ who=e, says=c }
 
 
 pAC :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m AC
-pAC = liftM AC (pAssertion `sepBy` pWs)
+pAC = pWs *> liftM AC (pAssertion `sepBy` pWs)
 
 
