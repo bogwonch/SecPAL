@@ -6,22 +6,20 @@ import System.Process
 import System.Exit
 import Control.Monad
 import Data.List
-{-
-import qualified Logic.General.Types as T
- -}
+import qualified Utilities as T
 
 type Type = String
 
 class Typed x where
   typeof :: x -> Type
-  removeType :: x -> x
+  remove :: x -> x
 
 instance Typed String where
   typeof str
     | '#' `notElem` str = none
     | otherwise = takeWhile (not . (== '#')) str
 
-  removeType str =
+  remove str =
     case elemIndex '#' str of
       (Just idx) -> let (_,'#':str') = idx `splitAt` str in str'
       Nothing    -> str
@@ -40,10 +38,10 @@ permissionsCheck :: String
                  -> String
                  -> IO Bool
 permissionsCheck apk permission = do
-  unless (typeof apk == app) $ 
-    fail $ apk ++ " does not have type " ++ app
+  unless (T.typeof apk == T.app) $ 
+    fail $ apk ++ " does not have type " ++ T.app
 
-  let app' = removeType apk
+  let app' = T.remove apk
   
   ret <- system $ unwords 
     [ "functions/permissionsCheck"

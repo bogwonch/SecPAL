@@ -8,14 +8,14 @@ type Type = String
 
 class Typed x where
   typeof :: x -> Type
-  removeType :: x -> x
+  remove :: x -> x
 
 instance Typed String where
   typeof str
     | '#' `notElem` str = none
     | otherwise = takeWhile (not . (== '#')) str
     
-  removeType str = 
+  remove str = 
     case elemIndex '#' str of
       (Just idx) -> let (_, '#':str') = idx `splitAt` str in str'
       Nothing    -> str

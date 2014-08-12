@@ -42,6 +42,8 @@ instance Vars Ec where
 instance Vars C where
     vars Boolean {} = []
     vars (Equals e1 e2) = vars e1 ++ vars e2
+    vars (LessThan e1 e2) = vars e1 ++ vars e2
+    vars (GreaterThan e1 e2) = vars e1 ++ vars e2
     vars (Not c) = vars c
     vars (Conj c1 c2) = vars c1 ++ vars c2
 

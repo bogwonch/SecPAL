@@ -28,16 +28,13 @@ instance PShow Ec where
   pShow (Value v) = pShow v
 
 instance PShow C where
-  --pShow (Boolean True) = "⊤"
   pShow (Boolean True) = "True"
-  --pShow (Boolean False) = "⊥"
   pShow (Boolean False) = "False"
   pShow (Equals x y) = pShow x++" = "++pShow y
-  --pShow (Not (Equals x y)) = pShow x++"≠"++pShow y
-  --pShow (Not x) = "¬ "++pShow x
   pShow (Not x) = "! "++pShow x
-  --pShow (Conj x y) = pShow x++" ⋀ "++pShow y
   pShow (Conj x y) = pShow x++", "++pShow y
+  pShow (LessThan x y) = pShow x++" < "++pShow y
+  pShow (GreaterThan x y) = pShow x++" > "++pShow y
 
 instance PShow Value where
     pShow (Int' x) = show x

@@ -85,7 +85,7 @@ pC :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pC = try pConj <|> pC' <?> "conjugation or constraint"
 
 pC' :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
-pC' = try pEquals <|> pNot <|> pBoolean <?> "constraint"
+pC' = try pEquals <|> try pLT <|> try pGT <|> pNot <|> pBoolean <?> "constraint"
 
 pBoolean :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pBoolean = pTrue <|> pFalse <?> "boolean"
@@ -99,6 +99,20 @@ pEquals = do
   _ <- spaces *> string "=" <* spaces
   b <- pEc 
   return $ Equals a b
+
+pLT :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
+pLT = do
+  a <- pEc
+  _ <- spaces *> string "<" <* spaces
+  b <- pEc 
+  return $ LessThan a b
+
+pGT :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
+pGT = do
+  a <- pEc
+  _ <- spaces *> string ">" <* spaces
+  b <- pEc 
+  return $ GreaterThan a b
 
 pNot :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pNot = do

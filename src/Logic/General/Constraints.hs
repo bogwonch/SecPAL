@@ -14,6 +14,8 @@ data Ec = Entity E
 
 data C = Boolean Bool
        | Equals Ec Ec
+       | LessThan Ec Ec
+       | GreaterThan Ec Ec
        | Not C
        | Conj C C
        deriving (Eq,Show)
@@ -25,3 +27,7 @@ data Value
     | Bool' Bool
   deriving (Eq,Show)
 
+instance Ord Ec where
+  compare (Value (Int' a))   (Value (Int' b))   = compare a b
+  compare (Value (Float' a)) (Value (Float' b)) = compare a b
+  compare _ _ = LT

@@ -119,6 +119,8 @@ instance Arbitrary C where
       where
         arbC' 0 = oneof [ Boolean <$> arbitrary
                         , Equals <$> arbitrary <*> arbitrary
+                        , LessThan <$> arbitrary <*> arbitrary
+                        , GreaterThan <$> arbitrary <*> arbitrary
                         ]
         arbC' n = oneof [ Boolean <$> arbitrary
                         , Equals <$> arbitrary <*> arbitrary

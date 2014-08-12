@@ -32,6 +32,20 @@ instance Evaluable C where
       then Just . PStated $ (ctx, c)
       else Nothing
 
+  ctx ||- c@(LessThan a b) = do
+    a' <- evaluate ctx a
+    b' <- evaluate ctx b
+    return $ if a' < b' 
+      then Just . PStated $ (ctx, c)
+      else Nothing
+
+  ctx ||- c@(GreaterThan a b) = do
+    a' <- evaluate ctx a
+    b' <- evaluate ctx b
+    return $ if a' > b' 
+      then Just . PStated $ (ctx, c)
+      else Nothing
+
   ctx ||- c@(Not c') = do
     p <- isJust <$> ctx ||- c'
     if p 

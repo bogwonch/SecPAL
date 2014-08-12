@@ -107,7 +107,7 @@ queryableApps = mapMaybe toE <$> getDirectoryContents "apps"
   where 
     toE f = 
       case splitExtension f of
-        (app, ".apk") -> Just Constant{ constName=T.app++":"++app, constType=T.app }
+        (app, ".apk") -> Just Constant{ constName=T.app++"#"++app, constType=T.app }
         _ -> Nothing
 
 populateExistentials :: Query -> IO Query
