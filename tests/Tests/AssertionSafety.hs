@@ -56,61 +56,61 @@ testUnsafe = [ testUnSafe1
 
 testSafe1 :: Test 
 testSafe1 = 
-  let secpal = makeAssertion "A says B can-read(Foo)."
+  let secpal = makeAssertion "A says B can-read(Foo);"
   in Test{ description=pShow secpal, result=test . safe $ secpal }
 
 testSafe2 :: Test 
 testSafe2 = 
-  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y)."
+  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe3 :: Test 
 testSafe3 = 
-  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y); ! x = y."
+  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y): ! x = y;"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 
 testSafe4 :: Test 
 testSafe4 = 
-  let secpal = makeAssertion "A says B can(x,y) if B can(x,y)."
+  let secpal = makeAssertion "A says B can(x,y) if B can(x,y);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe5 :: Test 
 testSafe5 = 
-  let secpal = makeAssertion "A says z can(x,y) if z can(x,Foo), z can-read(y)."
+  let secpal = makeAssertion "A says z can(x,y) if z can(x,Foo), z can-read(y);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 testSafe6 :: Test 
 testSafe6 = 
-  let secpal = makeAssertion "A says B can-say 0 x can(y,z)."
+  let secpal = makeAssertion "A says B can-say 0 x can(y,z);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
  
 testUnSafe1 :: Test 
 testUnSafe1 =
-  let secpal = makeAssertion "A says B can(x,Foo)."
+  let secpal = makeAssertion "A says B can(x,Foo);"
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 testUnSafe2 :: Test 
 testUnSafe2 = 
-  let secpal = makeAssertion "A says z can-read(Foo) if B can(x,y)."
+  let secpal = makeAssertion "A says z can-read(Foo) if B can(x,y);"
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 testUnSafe3 :: Test 
 testUnSafe3 = 
-  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y); ! w = y."
+  let secpal = makeAssertion "A says B can-read(Foo) if B can(x,y): ! w = y;"
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 testUnSafe4 :: Test 
 testUnSafe4 = 
-  let secpal = makeAssertion "A says B can(x,y) if B can-say 0 C can(x,y)."
+  let secpal = makeAssertion "A says B can(x,y) if B can-say 0 C can(x,y);"
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
 testUnSafe5 :: Test 
 testUnSafe5 = 
-  let secpal = makeAssertion "A says w can-say 0 x can(y,z)."
+  let secpal = makeAssertion "A says w can-say 0 x can(y,z);"
   in Test{description=pShow secpal, result=test . not . safe $ secpal }
 
 
@@ -127,37 +127,37 @@ testESSoS = [ agTest1
 
 agTest1 :: Test 
 agTest1 = 
-  let secpal = makeAssertion "anyone says app meets(policy) if evidence shows-meets(app, policy)."
+  let secpal = makeAssertion "anyone says app meets(policy) if evidence shows-meets(app, policy);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest2 :: Test 
 agTest2 =
-  let secpal = makeAssertion "Phone says app is-installable if app meets(NotMalware), app meets(NoInfoLeaks)."
+  let secpal = makeAssertion "Phone says app is-installable if app meets(NotMalware), app meets(NoInfoLeaks);"
   in Test{description=pShow secpal, result = test . safe $ secpal }
 
 agTest3 :: Test 
 agTest3 = 
-  let secpal = makeAssertion "Phone says Google can-say inf app meets(NotMalware)."
+  let secpal = makeAssertion "Phone says Google can-say inf app meets(NotMalware);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest4 :: Test 
 agTest4 = 
-  let secpal = makeAssertion "Google says AVChecker can-say 0 app meets(NotMalware)."
+  let secpal = makeAssertion "Google says AVChecker can-say 0 app meets(NotMalware);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest5 :: Test 
 agTest5 = 
-  let secpal = makeAssertion "Phone says NILInferer can-say 0 app meets(NoInfoLeaks)."
+  let secpal = makeAssertion "Phone says NILInferer can-say 0 app meets(NoInfoLeaks);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest6 :: Test 
 agTest6 = 
-  let secpal = makeAssertion "AVChecker says Game meets(NotMalware)."
+  let secpal = makeAssertion "AVChecker says Game meets(NotMalware);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 agTest7 :: Test 
 agTest7 =
-  let secpal = makeAssertion "NILInferer says Evidence shows-meets(Game, Policy)."
+  let secpal = makeAssertion "NILInferer says Evidence shows-meets(Game, Policy);"
   in Test{description=pShow secpal, result=test . safe $ secpal }
 
 

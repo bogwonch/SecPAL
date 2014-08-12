@@ -12,12 +12,12 @@ class Typed x where
 
 instance Typed String where
   typeof str
-    | ':' `notElem` str = none
-    | otherwise = takeWhile (not . (== ':')) str
+    | '#' `notElem` str = none
+    | otherwise = takeWhile (not . (== '#')) str
     
   removeType str = 
-    case elemIndex ':' str of
-      (Just idx) -> let (_, ':':str') = idx `splitAt` str in str'
+    case elemIndex '#' str of
+      (Just idx) -> let (_, '#':str') = idx `splitAt` str in str'
       Nothing    -> str
     
 

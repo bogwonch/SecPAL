@@ -22,11 +22,11 @@ instance PShow Claim where
     case (fs, c') of
       ([], Boolean True) -> pShow f
       (_,  Boolean True) -> pShow f++" if "++intercalate ", " (map pShow fs)
-      ([], _)            -> pShow f++"; "++pShow c'
-      _                  -> pShow f++" if "++intercalate ", " (map pShow fs)++"; "++pShow c'
+      ([], _)            -> pShow f++": "++pShow c'
+      _                  -> pShow f++" if "++intercalate ", " (map pShow fs)++": "++pShow c'
 
 instance PShow Assertion where
-  pShow Assertion{who=w, says=s} = pShow w++" says "++pShow s++"."
+  pShow Assertion{who=w, says=s} = pShow w++" says "++pShow s++";"
 
 instance PShow AC where
   pShow (AC a) = "{ " ++ intercalate ", " (map pShow a) ++ " }"

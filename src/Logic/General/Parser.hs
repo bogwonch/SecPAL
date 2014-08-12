@@ -16,13 +16,13 @@ warning :: forall (m :: * -> *). Monad m => String -> m ()
 warning = (return $!) . unsafePerformIO . hPutStrLn stderr . ("%%% WARNING: "++)
 
 pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
-pTokenChar = alphaNum <|> oneOf "-_'" <?> "token character"
+pTokenChar = alphaNum <|> oneOf "-._'" <?> "token character"
 
 pE :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pE = try pVariable <|> try pConstant <|> pString <?> "entity"
 
 pType :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m String
-pType = option [] (try $ many1 pTokenChar <* char ':')
+pType = option [] (try $ many1 pTokenChar <* char '#')
 
 pVariable :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pVariable = do
@@ -30,7 +30,7 @@ pVariable = do
   u <- many (char '_')
   n <- lower
   ns <- many pTokenChar
-  let var = if null t then u++n:ns else t++":"++ u++n:ns
+  let var = if null t then u++n:ns else t++"#"++ u++n:ns
   _ <- unless (null u) (warning "don't start variables with an underscore")
   return Variable{varName=var, varType=t}
 
@@ -40,7 +40,7 @@ pConstant = do
   u <- many (char '_')
   n <- upper
   ns <- many pTokenChar
-  let var = if null t then u++n:ns else t++":"++ u++n:ns
+  let var = if null t then u++n:ns else t++"#"++ u++n:ns
   _ <- unless (null u) (warning "don't start constants with an underscore")
   return Constant{constName=var, constType=t}
 
@@ -81,9 +81,9 @@ pEValue :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Ec
 pEValue = Value <$> pValue
 
 
-pConj :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pC :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pC = try pConj <|> pC' <?> "conjugation or constraint"
+
 pC' :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pC' = try pEquals <|> pNot <|> pBoolean <?> "constraint"
 
@@ -107,6 +107,7 @@ pNot = do
   x <- pC'
   return $ Not x
 
+pConj :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pConj = do
   a <- pC'
   _ <- spaces *> string "," <* spaces

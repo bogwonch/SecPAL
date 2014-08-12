@@ -88,7 +88,7 @@ pClaimConditional = do
 
 pClaimConstraint :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m C
 pClaimConstraint = do
-  _ <- char ';' -- Yeah not strictly SecPAL but it makes the parsing easier
+  _ <- char ':' -- Yeah not strictly SecPAL but it makes the parsing easier
   spaces
   pC
 
@@ -107,7 +107,7 @@ pAssertionUnsafe = do
   _ <- string " says "
   c <- pClaim
   spaces
-  _ <- char '.'
+  _ <- char ';'
   pWs
   return Assertion{ who=e, says=c }
 

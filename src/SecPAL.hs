@@ -93,7 +93,7 @@ main = do
   when help               $ usage >> exitSuccess
   when (isNothing acfile) $ usage >> exitFailure
 
-  parsedAC <- parseFromFile (many1 pAssertion) (fromJust acfile)
+  parsedAC <- parseFromFile (many1 pAssertionUnsafe) (fromJust acfile)
 
   whenLeft parsedAC $ \err -> hPrint stderr err >> exitFailure
   let theAC = fromRight parsedAC
