@@ -91,7 +91,7 @@ falseCondNoRename1 =
   let 
     a = makeAssertionUnsafe "Alice says Bob is-cool;"
     a' = makeAssertionUnsafe "Alice says Bob is-cool if Bob likes-jazz;"
-    b = makeAssertionUnsafe "Alice says Bob likes-jazz; False;"
+    b = makeAssertionUnsafe "Alice says Bob likes-jazz: False;"
     ctx = stdCtx{ ac=AC [a', b], d=Infinity }
     prf = unsafePerformIO $ ctx ||- a
     pPrf = ppProof prf
