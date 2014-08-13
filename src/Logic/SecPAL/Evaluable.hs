@@ -9,6 +9,7 @@ import Data.List
 import Data.Maybe
 import Logic.General.Entities
 import Logic.General.Constraints
+import Logic.General.Vars (ground)
 import Logic.SecPAL.AssertionSafety (flat)
 import Logic.SecPAL.Context
 import Logic.General.ConstraintEvaluation
@@ -24,32 +25,36 @@ class Evaluable x where
     (||-) :: Context -> x -> IO [Proof x]
 
 instance Evaluable C where
-  ctx ||- c@(Boolean True) = return [PStated (ctx,c)]
-  _ ||- (Boolean False) = return []
+  ctx ||- c 
+    | not (ground c) = fail $ "ungrounded constraint '"++pShow c++"'" 
+    | otherwise =
+        case c of
+          (Boolean True)  -> return [PStated (ctx,c)]
+          (Boolean False) -> return []
 
-  ctx ||- c@(Equals a b) = do
-    a' <- evaluate ctx a
-    b' <- evaluate ctx b
-    return [PStated (ctx, c) | a' == b']
+          (Equals a b) -> do
+            a' <- evaluate ctx a
+            b' <- evaluate ctx b
+            return [PStated (ctx, c) | a' == b']
 
-  ctx ||- c@(LessThan a b) = do
-    a' <- evaluate ctx a
-    b' <- evaluate ctx b
-    return [PStated (ctx, c) | a' < b']
+          (LessThan a b) -> do
+            a' <- evaluate ctx a
+            b' <- evaluate ctx b
+            return [PStated (ctx, c) | a' < b']
 
-  ctx ||- c@(GreaterThan a b) = do
-    a' <- evaluate ctx a
-    b' <- evaluate ctx b
-    return [PStated (ctx, c) | a' > b']
+          (GreaterThan a b) -> do
+            a' <- evaluate ctx a
+            b' <- evaluate ctx b
+            return [PStated (ctx, c) | a' > b']
 
-  ctx ||- c@(Not c') = do
-    p <- not.null <$> ctx ||- c'
-    return [PStated (ctx, c) | p]
+          (Not c') -> do
+            p <- not.null <$> ctx ||- c'
+            return [PStated (ctx, c) | p]
 
-  ctx ||- c@(Conj x y) = do
-    pX <- not.null <$> ctx ||- x
-    pY <- not.null <$> ctx ||- y
-    return [PStated (ctx,c) | pX && pY]
+          (Conj x y) -> do
+            pX <- not.null <$> ctx ||- x
+            pY <- not.null <$> ctx ||- y
+            return [PStated (ctx,c) | pX && pY]
 
 instance Evaluable Assertion where
   ctx ||- x = do
