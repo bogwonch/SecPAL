@@ -3,7 +3,7 @@
 module Logic.SecPAL.Evaluable where
 
 import Control.Applicative
-import Control.Monad (when, unless, forM)
+import Control.Monad (when, forM)
 import Data.Array.IO
 import Data.List
 import Data.Maybe
@@ -19,7 +19,6 @@ import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions hiding (interferes, interferent)
 import System.Console.ANSI
 import System.Random
-import System.IO
 
 type Result = (Proof Assertion)
 class Evaluable x where 
@@ -183,11 +182,12 @@ proofSets (ps:qs) =
                ]
   in proofs
 
-proofsWithConstraint :: Context -> [[Proof b]] -> C -> IO [([Proof b], Proof C)]
+proofsWithConstraint :: Context -> [[Proof Assertion]] -> C -> IO [([Proof Assertion], Proof C)]
 proofsWithConstraint ctx pfs c = do
   p <- mapM (proofWithConstraint ctx c) pfs
   return [ (p', head c') | (p', c') <- p, not . null $ c' ]
 
+proofWithConstraint :: Context -> C -> [Proof Assertion] -> IO ([Proof Assertion], [Proof C])
 proofWithConstraint ctx c p = do
   let θ = concatMap (theta.fst.conclusion) p
   let c' = c `subAll` θ
