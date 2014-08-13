@@ -3,7 +3,7 @@
 module Logic.SecPAL.Evaluable where
 
 import Control.Applicative
-import Control.Monad (when, forM)
+import Control.Monad (when, unless, forM)
 import Data.Array.IO
 import Data.List
 import Data.Maybe
@@ -16,9 +16,10 @@ import Logic.General.ConstraintEvaluation
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
 import Logic.SecPAL.Proof hiding (constraint, delegation)
-import Logic.SecPAL.Substitutions
+import Logic.SecPAL.Substitutions hiding (interferes, interferent)
 import System.Console.ANSI
 import System.Random
+import System.IO
 
 type Result = (Proof Assertion)
 class Evaluable x where 
@@ -145,6 +146,7 @@ x `isIn` (AC xs) = x `elem` xs
 cond' :: Context -> Assertion -> Assertion -> IO [Result]
 cond' ctx result query =
   let w = who query
+      c = constraint . says $ query
       whoSays = asserts w
       fs = conditions (says query)
       aSaysFs = map whoSays fs
@@ -153,13 +155,48 @@ cond' ctx result query =
       ctx' = ctx{theta=[], ac=ac'}
   in do
     ifStatements <- mapM (ctx' ||-) aSaysFs
-    cs <- ctx' ||- (constraint . says $ query)
+    -- TODO: find non interferent proofs in ifstatements and apply delta to c
+    -- Possibly do this in makeCond?
+    let pfs = proofSets ifStatements
+    -- hPutStrLn stderr "@@@@@@"
+    -- hPutStrLn stderr (pShow $ map (map (theta.fst.conclusion)) pfs)
+    -- hPutStrLn stderr "@@@@@@"
+
+    (ps, cs) <- unzip <$> proofsWithConstraint ctx pfs c
+
+
     return $
       makeCond 
         (ctx,result) 
-        ifStatements
+        ps
         cs
         (flat . fact . says $ query)
+
+proofSets :: [[Proof b]] -> [[Proof b]]
+proofSets [] = []
+proofSets [x] = map (:[]) x 
+proofSets (ps:qs) = 
+  let proofs = [ p:q
+               | p <- ps
+               , q <- proofSets qs
+               , not (interferent [p] q)
+               ]
+  in proofs
+
+proofsWithConstraint :: Context -> [[Proof b]] -> C -> IO [([Proof b], Proof C)]
+proofsWithConstraint ctx pfs c = do
+  p <- mapM (proofWithConstraint ctx c) pfs
+  return [ (p', head c') | (p', c') <- p, not . null $ c' ]
+
+proofWithConstraint ctx c p = do
+  let θ = concatMap (theta.fst.conclusion) p
+  let c' = c `subAll` θ
+  if ground c'
+    then do
+      cp <- ctx ||- c'
+      return (p, cp)
+    else
+      return (p,[])
 
 cond :: Context -> Assertion -> Assertion -> IO [Result]
 cond ctx result query =

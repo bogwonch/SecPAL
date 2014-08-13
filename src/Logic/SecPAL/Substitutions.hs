@@ -25,12 +25,12 @@ subAll = foldl sub
 interferes :: Substitution -> Substitution -> Bool
 interferes a b = var a == var b && for a /= for b
 
-interferent :: [Substitution] -> Bool
-interferent xs = not.null$ [ (x,x')
-                           | x <- xs
-                           , x' <- xs
-                           , x `interferes` x'
-                           ]
+interferent :: [Substitution] -> [Substitution] -> Bool
+interferent xs ys  = not.null$ [ (x,y)
+                               | x <- xs
+                               , y <- ys
+                               , x `interferes` y
+                               ]
 
 instance Substitutive E where
   x `sub` θ  

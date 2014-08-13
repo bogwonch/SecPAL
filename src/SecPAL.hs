@@ -14,7 +14,7 @@ import Logic.SecPAL.Pretty
 import qualified Logic.SecPAL.Query as Q
 import qualified Logic.SecPAL.Substitutions as S
 import Logic.SecPAL.DatalogC
-import Logic.DatalogC.Pretty
+import Logic.DatalogC.Pretty()
 import System.Console.GetOpt
 import System.Console.Readline
 import System.Environment
@@ -203,16 +203,16 @@ runQuery c q verbose debugging =
           p <- runAssertion ctx (Q.query q) verbose debugging 
           printResult verbose debugging p
 
-runAssertion :: Context -> Assertion -> Bool -> Bool -> IO (Maybe (Proof Assertion))
+runAssertion :: Context -> Assertion -> Bool -> Bool -> IO [ Proof Assertion ]
 runAssertion ctx a verbose _ = do
   unless (safe a) ( fail $ "query "++pShow a++" is unsafe" )
   ctx ||- a
 
 printResult verbose debugging decision =
   case decision of
-    Nothing      -> putStrLn "! No."
-    (Just proof) -> do when verbose $ (putStrLn . pShow) proof 
-                       unless verbose $ putStrLn "! Yes."
+    []      -> putStrLn "! No."
+    proof   -> do when verbose $ (putStrLn . pShow . head) proof 
+                  unless verbose $ putStrLn "! Yes."
 
 runExistentialQuery :: Context  -> Q.Query -> Bool -> Bool -> IO ()
 runExistentialQuery ctx q verbose debugging = do
@@ -224,7 +224,7 @@ runExistentialQuery ctx q verbose debugging = do
 
 runExistentialQuery' verbose debugging ctx (a,s) = do
   decision <- runAssertion ctx a verbose debugging
-  when (isJust decision) $ do
+  unless (null$ decision) $ do
     putStrLn $ pShow s ++ " ?- " ++ pShow a
     printResult verbose debugging decision
   return ()

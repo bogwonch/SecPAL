@@ -5,8 +5,9 @@ import Logic.General.Constraints (C)
 import Logic.SecPAL.Pretty
 import Logic.General.Pretty()
 import Logic.SecPAL.Context
-import Data.Maybe
 import Data.List
+import qualified Logic.SecPAL.Substitutions as S
+
 
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
@@ -24,6 +25,19 @@ data Proof a = PStated { conclusion :: (Context, a) }
                          }
   deriving (Show)
 
+interferes :: Proof a -> Proof b -> Bool
+a `interferes` b = 
+  let ta = theta . fst . conclusion $ a
+      tb = theta . fst . conclusion $ b
+  in ta `S.interferent` tb
+
+interferent :: [Proof a] -> [Proof b] -> Bool
+interferent xs ys = not.null$ [ (x,y)
+                              | x <- xs
+                              , y <- ys
+                              , x `interferes` y
+                              ]
+        
 
 instance (PShow a) => PShow (Proof a) where
   pShow prf = 
@@ -47,7 +61,7 @@ pShow' n PCond{conclusion=cc, ifs=[], constraint=c} =
 
 pShow' n PCond{conclusion=cc, ifs=is, constraint=c} = 
     intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
-                     , intercalate "\n" $ map (pShow' (n+1). head) is 
+                     , intercalate "\n" $ map (pShow' (n+1)) (head is) 
                      , pShow' (n+1) (head c)
                      ]
 
@@ -92,3 +106,7 @@ makeCanActAs cc delta q
   | null delta = []
   | null q     = []
   | otherwise  = [PCanActAs cc delta q]
+
+
+
+
