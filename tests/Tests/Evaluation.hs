@@ -2,14 +2,18 @@ module Tests.Evaluation where
 
 import Logic.SecPAL.Language
 import Logic.SecPAL.Pretty
-import Logic.General.Pretty
+import Logic.General.Pretty()
 import Logic.SecPAL.Parser
+import Logic.SecPAL.Proof
 import Text.Parsec
 import Logic.SecPAL.Evaluable
 import Logic.SecPAL.Context
 import Tests.Testable
-import Data.Maybe
 import System.IO.Unsafe (unsafePerformIO)
+
+ppProof :: PShow x => [Proof x] -> String
+ppProof [] = ""
+ppProof p  = ('\n':) . pShow . head $ p
 
 makeAssertionUnsafe :: String -> Assertion
 makeAssertionUnsafe x = case parse pAssertionUnsafe "" x of
@@ -47,10 +51,10 @@ inACTest1 =
     a = makeAssertionUnsafe "Alice says Bob is-cool;"
     ctx = stdCtx{ ac=AC [a], d=Infinity }
     prf = unsafePerformIO $ ctx ||- a
-    pPrf = maybe "" (\p -> '\n':pShow p) prf
+    pPrf = ppProof prf
   in
     Test{ description = pShow ctx ++" |= "++pShow a ++ pPrf
-        , result = test . isJust $ prf
+        , result = test . not . null $ prf
         }
 
 falseInACTest1 :: Test 
@@ -60,10 +64,10 @@ falseInACTest1 =
     b = makeAssertionUnsafe "Alice says Bob is-cool;"
     ctx = stdCtx{ ac=AC [a], d=Infinity }
     prf = unsafePerformIO $ ctx ||- b
-    pPrf = maybe "" (\p -> '\n':pShow p) prf
+    pPrf = ppProof prf
   in
     Test{ description = pShow ctx ++" |= "++pShow b++pPrf
-        , result = test . isNothing $ prf
+        , result = test . null $ prf
         }
 
 -- Can we use the cond variable without renaming
@@ -75,10 +79,10 @@ condNoRename1 =
     b = makeAssertionUnsafe "Alice says Bob likes-jazz;"
     ctx = stdCtx{ ac=AC [a', b], d=Infinity }
     prf = unsafePerformIO $ ctx ||- a
-    pPrf = maybe "" (\p -> '\n':pShow p) prf
+    pPrf = ppProof prf
   in
     Test{ description = pShow ctx ++" |= "++pShow a++pPrf
-        , result = test . isJust $ prf
+        , result = test . not . null $ prf
         }
         --
 
@@ -90,10 +94,10 @@ falseCondNoRename1 =
     b = makeAssertionUnsafe "Alice says Bob likes-jazz; False;"
     ctx = stdCtx{ ac=AC [a', b], d=Infinity }
     prf = unsafePerformIO $ ctx ||- a
-    pPrf = maybe "" (\p -> '\n':pShow p) prf
+    pPrf = ppProof prf
   in
     Test{ description = pShow ctx ++" |= "++pShow a++pPrf
-        , result = test . isNothing $ prf
+        , result = test . null $ prf
         }
 
 canSay01 :: Test 
@@ -103,9 +107,9 @@ canSay01 =
       a2 = makeAssertionUnsafe "Alice says Alice likes-jazz;"
       ctx = stdCtx{ ac=AC [a1,a2], d=Infinity }
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 canSayInf1 :: Test 
@@ -116,9 +120,9 @@ canSayInf1 =
       a3 = makeAssertionUnsafe "Clive says Alice likes-jazz;"
       ctx = stdCtx{ ac=AC [a1,a2,a3], d=Infinity }
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 canSayInfFalse1 :: Test 
@@ -129,9 +133,9 @@ canSayInfFalse1 =
       a3 = makeAssertionUnsafe "Clive says Alice likes-jazz;"
       ctx = stdCtx{ ac=AC [a1,a2,a3], d=Infinity }
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isNothing $ prf
+          , result = test . null $ prf
           }
 
 
@@ -141,9 +145,9 @@ condRename1 =
       a1   = makeAssertionUnsafe "Bob says everyone likes-jazz;"
       ctx  = stdCtx{ ac=AC [a1], d=Infinity }
       prf  = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 condRename2 :: Test 
@@ -153,9 +157,9 @@ condRename2 =
       a2 = makeAssertionUnsafe "Bob says Alice is-human;"
       ctx = stdCtx{ ac=AC [a1, a2], d=Infinity }
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 canSayRename1 :: Test 
@@ -165,9 +169,9 @@ canSayRename1 =
       a2 = makeAssertionUnsafe "Alice says Alice likes-jazz;"
       ctx = stdCtx{ ac=AC [a1, a2], d=Infinity }
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 testESSoSExample :: Test 
@@ -182,9 +186,9 @@ testESSoSExample =
       a9 = makeAssertion "NILInferer says Evidence shows-meets(Game,NoInfoLeaks);" -- Bit simplified
       ctx = stdCtx{ac=AC [a3, a4, a5, a6, a7, a8, a9]}
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 
@@ -194,9 +198,9 @@ testHasPermission =
       a1 = makeAssertionUnsafe "anyone says app can-access-internet: permissionsCheck(apk#app, \"INTERNET\") = True;"
       ctx = stdCtx{ac=AC [a1]}
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
 
 testHasntPermission :: Test 
@@ -205,9 +209,9 @@ testHasntPermission =
       a1 = makeAssertionUnsafe "anyone says app cannot-access-internet: permissionsCheck(apk#app, \"INTERNET\") = False;"
       ctx = stdCtx{ac=AC [a1]}
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isNothing $ prf
+          , result = test . null $ prf
           }
 
 testHasntPermission2 :: Test 
@@ -216,9 +220,9 @@ testHasntPermission2 =
       a1 = makeAssertionUnsafe "anyone says app cannot-dance: permissionsCheck(apk#app, \"BOOGIE\") = False;"
       ctx = stdCtx{ac=AC [a1]}
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }
         
 
@@ -230,7 +234,7 @@ testCanActAs1 =
       b = makeAssertion "A says C okay;"
       ctx = stdCtx{ac=AC [a,b]}
       prf = unsafePerformIO $ ctx ||- q
-      pPrf = maybe "" (\p -> '\n':pShow p) prf
+      pPrf = ppProof prf
   in Test { description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
-          , result = test . isJust $ prf
+          , result = test . not . null $ prf
           }

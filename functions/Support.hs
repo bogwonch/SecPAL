@@ -1,6 +1,7 @@
 module Support where
 
 import Data.List
+import Data.Char
 import Network.Curl
 import Control.Monad
 import qualified Utilities as T
@@ -9,11 +10,11 @@ type App = String
 
 support :: App -> App -> IO Float
 support lhs rhs = do
-  unless (T.typeof lhs == T.app) (fail $ "type of '"++lhs++"' is not '"++T.app++"'")
-  unless (T.typeof rhs == T.app) (fail $ "type of '"++rhs++"' is not '"++T.app++"'")
+  lhs `T.shouldHaveType` T.app
+  rhs `T.shouldHaveType` T.app
 
-  let lhs' = T.remove lhs
-  let rhs' = T.remove rhs
+  let lhs' = map toLower . T.remove $ lhs
+  let rhs' = map toLower . T.remove $ rhs
 
   let url = "http://localhost:5000/support"
             ++"?lhs="++lhs'

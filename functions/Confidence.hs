@@ -10,8 +10,8 @@ type App = String
 
 confidence :: App -> App -> IO Float
 confidence lhs rhs = do
-  unless (T.typeof lhs == T.app) (fail $ "type of '"++lhs++"' is not '"++T.app++"'")
-  unless (T.typeof rhs == T.app) (fail $ "type of '"++rhs++"' is not '"++T.app++"'")
+  lhs `T.shouldHaveType` T.app
+  rhs `T.shouldHaveType` T.app
 
   let lhs' = map toLower . T.remove $ lhs
   let rhs' = map toLower . T.remove $ rhs

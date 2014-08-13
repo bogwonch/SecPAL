@@ -22,6 +22,16 @@ class Substitutive a where
 subAll :: (Substitutive a) => a -> [Substitution] -> a
 subAll = foldl sub 
 
+interferes :: Substitution -> Substitution -> Bool
+interferes a b = var a == var b && for a /= for b
+
+interferent :: [Substitution] -> Bool
+interferent xs = not.null$ [ (x,x')
+                           | x <- xs
+                           , x' <- xs
+                           , x `interferes` x'
+                           ]
+
 instance Substitutive E where
   x `sub` θ  
     | x == var θ = for θ 
@@ -139,6 +149,8 @@ instance Substitutive Ec where
 instance Substitutive C where
   (Boolean b) `sub` _  = Boolean b
   (Equals a b) `sub` θ = Equals (a `sub` θ) (b `sub` θ)
+  (LessThan a b) `sub` θ = LessThan (a `sub` θ) (b `sub` θ)
+  (GreaterThan a b) `sub` θ = GreaterThan (a `sub` θ) (b `sub` θ)
   (Not a) `sub` θ      = Not $ a `sub` θ
   (Conj a b) `sub` θ   = Conj (a `sub` θ) (b `sub` θ)
 

@@ -55,3 +55,4 @@ main = do
   runTestsM "Datalog/Parser" testDatalogQC
   runTests "Bugs/Infinite-Loop-cansay" [infLoop]
   runTests "Bugs/Infinite-Loop-cond" [infLoop2]
+  runTests "Bugs/Renaming-cond" [renaming1]

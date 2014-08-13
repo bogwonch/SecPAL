@@ -30,4 +30,4 @@ data Value
 instance Ord Ec where
   compare (Value (Int' a))   (Value (Int' b))   = compare a b
   compare (Value (Float' a)) (Value (Float' b)) = compare a b
-  compare _ _ = LT
+  compare a b = error$"Comparing non-comparable things "++show a++" and "++show b

@@ -3,24 +3,24 @@ module Logic.SecPAL.Proof where
 import Logic.SecPAL.Language (Assertion)
 import Logic.General.Constraints (C)
 import Logic.SecPAL.Pretty
-import Logic.General.Pretty
+import Logic.General.Pretty()
 import Logic.SecPAL.Context
 import Data.Maybe
 import Data.List
 
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
-                     , ifs :: [ Proof Assertion ]
-                     , constraint :: Proof C
+                     , ifs :: [[Proof Assertion]]
+                     , constraint :: [Proof C]
                      , flatness :: Bool
                      }
              | PCanSay { conclusion :: (Context, a)
-                       , delegation :: Proof Assertion
-                       , action :: Proof Assertion
+                       , delegation :: [Proof Assertion]
+                       , action :: [Proof Assertion]
                        }
              | PCanActAs { conclusion :: (Context, a)
-                         , renaming :: Proof Assertion
-                         , renamed :: Proof Assertion
+                         , renaming :: [Proof Assertion]
+                         , renamed :: [Proof Assertion]
                          }
   deriving (Show)
 
@@ -42,53 +42,53 @@ pShow' n (PStated stm) =
 
 pShow' n PCond{conclusion=cc, ifs=[], constraint=c} = 
     intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
-                     , pShow' (n+1) c
+                     , pShow' (n+1) (head c)
                      ]
 
 pShow' n PCond{conclusion=cc, ifs=is, constraint=c} = 
     intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
-                     , intercalate "\n" $ map (pShow' (n+1)) is 
-                     , pShow' (n+1) c
+                     , intercalate "\n" $ map (pShow' (n+1). head) is 
+                     , pShow' (n+1) (head c)
                      ]
 
 pShow' n PCanSay{conclusion=cc, delegation=de, action=a} = 
     intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
-                     , pShow' (n+1) de
-                     , pShow' (n+1) a
+                     , pShow' (n+1) $ head de
+                     , pShow' (n+1) $ head a
                      ]
 
 pShow' n PCanActAs{conclusion=cc, renaming=r, renamed=q} = 
     intercalate "\n" [ replicate (n*2) ' ' ++ showCtx cc
-                     , pShow' (n+1) r
-                     , pShow' (n+1) q
+                     , pShow' (n+1) $ head r
+                     , pShow' (n+1) $ head q
                      ]
 
 makeCond :: (Context, Assertion)
-         -> [Maybe (Proof Assertion)]
-         -> Maybe (Proof C)
+         -> [[Proof Assertion]]
+         -> [Proof C]
          -> Bool
-         -> Maybe (Proof Assertion)
+         -> [Proof Assertion]
 makeCond cc is cs flat
-  | any isNothing is = Nothing
-  | isNothing cs     = Nothing
-  | not flat         = Nothing
-  | otherwise        = Just $ PCond cc (map fromJust is) (fromJust cs) flat
+  | any null is = []
+  | null cs     = []
+  | not flat    = []
+  | otherwise   = [PCond cc is cs flat]
 
 makeCanSay :: (Context, Assertion)
-           -> Maybe (Proof Assertion)
-      	   -> Maybe (Proof Assertion)
-	         -> Maybe (Proof Assertion)
+           -> [ Proof Assertion ]
+      	   -> [ Proof Assertion ]
+	         -> [ Proof Assertion ]
 makeCanSay cc de a
-  | isNothing de = Nothing
-  | isNothing a  = Nothing
-  | otherwise    = Just $ PCanSay cc (fromJust de) (fromJust a)
+  | null de   = []
+  | null a    = []
+  | otherwise = [PCanSay cc de a]
 
 
 makeCanActAs :: (Context, Assertion)
-             -> Maybe (Proof Assertion)
-             -> Maybe (Proof Assertion)
-             -> Maybe (Proof Assertion)
+             -> [ Proof Assertion ]
+             -> [ Proof Assertion ]
+             -> [ Proof Assertion ]
 makeCanActAs cc delta q
-  | isNothing delta = Nothing
-  | isNothing q     = Nothing
-  | otherwise       = Just $ PCanActAs cc (fromJust delta) (fromJust q)
+  | null delta = []
+  | null q     = []
+  | otherwise  = [PCanActAs cc delta q]
