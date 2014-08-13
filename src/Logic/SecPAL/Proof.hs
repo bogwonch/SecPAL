@@ -1,6 +1,6 @@
 module Logic.SecPAL.Proof where
 
-import Logic.SecPAL.Language (Assertion)
+import Logic.SecPAL.Language hiding (constraint, delegation)
 import Logic.General.Constraints (C)
 import Logic.SecPAL.Pretty
 import Logic.General.Pretty()
@@ -82,11 +82,13 @@ makeCond :: (Context, Assertion)
          -> [Proof C]
          -> Bool
          -> [Proof Assertion]
-makeCond cc is cs flat
-  | any null is = []
+
+makeCond cc@(_, Assertion{ says=Claim{ conditions=conds }}) is cs flat
+  | not (null conds) && null is = []
   | null cs     = []
   | not flat    = []
   | otherwise   = [PCond cc is cs flat]
+
 
 makeCanSay :: (Context, Assertion)
            -> [ Proof Assertion ]

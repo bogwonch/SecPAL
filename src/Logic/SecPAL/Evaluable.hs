@@ -20,6 +20,8 @@ import Logic.SecPAL.Substitutions hiding (interferes, interferent)
 import System.Console.ANSI
 import System.Random
 
+import System.IO
+
 type Result = (Proof Assertion)
 class Evaluable x where 
     (||-) :: Context -> x -> IO [Proof x]
@@ -143,6 +145,19 @@ x `isIn` (AC xs) = x `elem` xs
 --                  AC, D |= A says f
 --
 cond' :: Context -> Assertion -> Assertion -> IO [Result]
+
+cond' ctx result query@Assertion{ says=Claim{ conditions=[] }} =
+  let w = who query
+      c = constraint . says $ query
+  in do
+    (_, cs) <- proofWithConstraint ctx c []
+    return $
+      makeCond 
+        (ctx, result)
+        []
+        cs
+        (flat . fact . says $ query)
+
 cond' ctx result query =
   let w = who query
       c = constraint . says $ query
@@ -154,15 +169,9 @@ cond' ctx result query =
       ctx' = ctx{theta=[], ac=ac'}
   in do
     ifStatements <- mapM (ctx' ||-) aSaysFs
-    -- TODO: find non interferent proofs in ifstatements and apply delta to c
-    -- Possibly do this in makeCond?
     let pfs = proofSets ifStatements
-    -- hPutStrLn stderr "@@@@@@"
-    -- hPutStrLn stderr (pShow $ map (map (theta.fst.conclusion)) pfs)
-    -- hPutStrLn stderr "@@@@@@"
 
     (ps, cs) <- unzip <$> proofsWithConstraint ctx pfs c
-
 
     return $
       makeCond 
@@ -195,7 +204,8 @@ proofWithConstraint ctx c p = do
     then do
       cp <- ctx ||- c'
       return (p, cp)
-    else
+    else do
+      hPutStrLn stderr$ "@@@@ unground " ++ pShow c'
       return (p,[])
 
 cond :: Context -> Assertion -> Assertion -> IO [Result]
