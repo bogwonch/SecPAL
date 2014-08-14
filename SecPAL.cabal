@@ -23,6 +23,7 @@ executable secpal
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
   
+  ghc-options:      -threaded -fno-warn-unused-do-bind
   build-depends:    parsec, 
                     process,
                     filemanip,
@@ -34,6 +35,7 @@ executable secpal
                     filepath,
                     directory,
                     mtl,
+                    parallel-io,
                     hint
 
   other-modules:    Logic.DatalogC.Fresh

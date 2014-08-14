@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Monad hiding (forM_)
+import Control.Concurrent.ParallelIO.Global
 import Data.Either.Unwrap
 import Data.Foldable (forM_)
 import Data.Maybe
@@ -204,11 +205,12 @@ runQuery c q verbose debugging =
           printResult verbose debugging p
 
 runAssertion :: Context -> Assertion -> Bool -> Bool -> IO [ Proof Assertion ]
-runAssertion ctx a verbose _ = do
+runAssertion ctx a _ _ = do
   unless (safe a) ( fail $ "query "++pShow a++" is unsafe" )
   ctx ||- a
 
-printResult verbose debugging decision =
+printResult :: Bool -> Bool -> [Proof Assertion] -> IO ()
+printResult verbose _ decision =
   case decision of
     []      -> putStrLn "! No."
     proof   -> do when verbose $ (putStrLn . pShow . head) proof 
@@ -220,11 +222,23 @@ runExistentialQuery ctx q verbose debugging = do
   let ss = Q.getSubs (Q.existentials . Q.options $ q') 
   let a = Q.query q'
   let as = [ (a `S.subAll` s, s) | s <- ss ]
-  mapM_ (runExistentialQuery' verbose debugging ctx) as
 
+  {- BUG: Actually running this code in parallel is currently broken due to GHC
+   - bug #3373.  Because we fork the GHC API to run constraints we can't
+   - parallelise this code currently.
+   -
+   - FIX: Rewrite constraint code to be static not dynamic
+   - FIX: Do compilation and loading of constraint checking code BEFORE querys
+   -
+   - https://ghc.haskell.org/trac/ghc/ticket/3373
+   -}
+  parallel_ $ map (runExistentialQuery' verbose debugging ctx) as
+  return ()
+
+runExistentialQuery' :: Bool -> Bool -> Context -> (Assertion, [S.Substitution]) -> IO ()
 runExistentialQuery' verbose debugging ctx (a,s) = do
   decision <- runAssertion ctx a verbose debugging
-  unless (null$ decision) $ do
+  unless (null decision) $ do
     putStrLn $ pShow s ++ " ?- " ++ pShow a
     printResult verbose debugging decision
   return ()
