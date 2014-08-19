@@ -147,8 +147,7 @@ x `isIn` (AC xs) = x `elem` xs
 cond' :: Context -> Assertion -> Assertion -> IO [Result]
 
 cond' ctx result query@Assertion{ says=Claim{ conditions=[] }} =
-  let w = who query
-      c = constraint . says $ query
+  let c = constraint . says $ query
   in do
     (_, cs) <- proofWithConstraint ctx c []
     return $
