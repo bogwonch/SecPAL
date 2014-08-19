@@ -5,24 +5,23 @@ import Data.Char
 import Network.Curl
 import System.Process
 import System.Exit
-import Control.Applicative
 import Logic.General.Constraints
 import qualified Logic.General.Types as T
 
-runConstraint :: F -> [String] -> IO String
+runConstraint :: F -> [String] -> IO Ec
 
 runConstraint F{fName="category"} [app] 
- = show <$> category app
+ = category app
 runConstraint F{fName="confidence"} [a,b] 
- = show <$> confidence a b
+ = confidence a b
 runConstraint F{fName="lift"} [a,b] 
- = show <$> lift a b
+ = lift a b
 runConstraint F{fName="support"} [a,b] 
- = show <$> support a b
+ = support a b
 runConstraint F{fName="permissionsCheck"} [app,p]
- = show <$> permissionsCheck app p
+ = permissionsCheck app p
 runConstraint F{fName="hasPermission"} [app,p] 
- = show <$> hasPermission app p
+ = hasPermission app p
 
 runConstraint _ _ = fail "Unknown constraint function"
 
@@ -30,7 +29,7 @@ runConstraint _ _ = fail "Unknown constraint function"
 type App = String
 type Permission = String
 
-category :: App -> IO String
+category :: App -> IO Ec
 category app = do
   app `T.shouldHaveType` T.app
 
@@ -41,9 +40,9 @@ category app = do
   (_, str) <- curlGetString url []
   if "Error:" `isPrefixOf` str
     then fail "arguments"
-    else return $ read str
+    else return . Value . String' . read $ str
 
-hasPermission :: App -> Permission -> IO Bool
+hasPermission :: App -> Permission -> IO Ec
 hasPermission app permission = do
   app `T.shouldHaveType` T.app
 
@@ -55,10 +54,10 @@ hasPermission app permission = do
   (_, str) <- curlGetString url []
   if "Error:" `isPrefixOf` str
     then fail "arguments"
-    else return $ read str
+    else return . Value . Bool' . read $ str
 
 
-caratData :: String -> App -> App -> IO Float
+caratData :: String -> App -> App -> IO Ec
 caratData kind lhs rhs =  do
   lhs `T.shouldHaveType` T.app
   rhs `T.shouldHaveType` T.app
@@ -72,9 +71,9 @@ caratData kind lhs rhs =  do
   (_, str) <- curlGetString url []
   if "Error:" `isPrefixOf` str
     then fail "arguments"
-    else return $ read str
+    else return . Value . Float' . read $ str
 
-confidence, lift, support :: App -> App -> IO Float
+confidence, lift, support :: App -> App -> IO Ec
 lift       = caratData "lift"
 support    = caratData "support"
 confidence = caratData "confidence"
@@ -82,7 +81,7 @@ confidence = caratData "confidence"
 
 permissionsCheck :: String
                  -> String
-                 -> IO Bool
+                 -> IO Ec
 permissionsCheck apk permission = do
   apk `T.shouldHaveType` T.app
 
@@ -94,5 +93,5 @@ permissionsCheck apk permission = do
     , permission
     ]
   case ret of
-    ExitSuccess -> return True
-    ExitFailure _ -> return False
+    ExitSuccess   -> return . Value . Bool' $ True
+    ExitFailure _ -> return . Value . Bool' $ False

@@ -1,4 +1,4 @@
-module Logic.General.ConstraintEvaluation where
+module Logic.General.ConstraintEvaluation (evaluate) where
 
 import Data.Char
 import Logic.General.Constraints
@@ -20,11 +20,8 @@ evaluateFunction :: Context -> Ec -> IO Ec
 evaluateFunction = functionInterpreter
 
 functionInterpreter :: Context -> Ec -> IO Ec
-functionInterpreter ctx (Apply f xs) = do
-  ans <- runConstraint f (map pShow xs)
-
-  -- Parse the answer
-  valueParser ctx (N.name f) ans
+functionInterpreter _ (Apply f xs) =
+  runConstraint f (map eShow xs)
 
 functionInterpreter _ (Entity _) = fail "attempted to interpret entity as a function"
 functionInterpreter _ (Value _) = fail "attempted to interpret value as a function"
@@ -41,7 +38,7 @@ getPkgName (f:fs) = toUpper f : fs
 getPkgName [] = error "nameless package"
 
 eShow :: Ec -> String
-eShow e@(Entity _) = '"': pShow e ++ "\""
+eShow (Value (String' x)) = x
 eShow x = pShow x
 
 

@@ -22,8 +22,8 @@ source-repository head
 executable secpal
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
-  
-  ghc-options:      -threaded -fno-warn-unused-do-bind
+  ghc-options:      -threaded -fno-warn-unused-do-bind -O2 -rtsopts
+  ghc-prof-options: -fprof-auto
   build-depends:    parsec, 
                     process,
                     filemanip,
