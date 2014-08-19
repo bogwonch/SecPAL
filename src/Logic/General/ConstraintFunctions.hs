@@ -5,25 +5,28 @@ import Data.Char
 import Network.Curl
 import System.Process
 import System.Exit
+import Control.Concurrent.ParallelIO.Global
 import Logic.General.Constraints
 import qualified Logic.General.Types as T
 
 runConstraint :: F -> [String] -> IO Ec
+runConstraint f xs = extraWorkerWhileBlocked $ runConstraint' f xs
+--runConstraint f xs =  runConstraint' f xs
 
-runConstraint F{fName="category"} [app] 
+runConstraint' F{fName="category"} [app] 
  = category app
-runConstraint F{fName="confidence"} [a,b] 
+runConstraint' F{fName="confidence"} [a,b] 
  = confidence a b
-runConstraint F{fName="lift"} [a,b] 
+runConstraint' F{fName="lift"} [a,b] 
  = lift a b
-runConstraint F{fName="support"} [a,b] 
+runConstraint' F{fName="support"} [a,b] 
  = support a b
-runConstraint F{fName="permissionsCheck"} [app,p]
+runConstraint' F{fName="permissionsCheck"} [app,p]
  = permissionsCheck app p
-runConstraint F{fName="hasPermission"} [app,p] 
+runConstraint' F{fName="hasPermission"} [app,p] 
  = hasPermission app p
 
-runConstraint _ _ = fail "Unknown constraint function"
+runConstraint' _ _ = fail "Unknown constraint function"
 
 
 type App = String
@@ -68,7 +71,9 @@ caratData kind lhs rhs =  do
   let url = "http://localhost:5000/"++kind
             ++"?lhs="++lhs'
             ++"&rhs="++rhs'
-  (_, str) <- curlGetString url []
+  (code, str) <- curlGetString url []
+  print code
+  putStrLn str
   if "Error:" `isPrefixOf` str
     then fail "arguments"
     else return . Value . Float' . read $ str

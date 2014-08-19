@@ -22,7 +22,8 @@ source-repository head
 executable secpal
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
-  ghc-options:      -threaded -fno-warn-unused-do-bind -O2 -fexcess-precision -optc-O3 -optc-ffast-math -optc-march=native
+  ghc-options:      -threaded -fno-warn-unused-do-bind -O2 -fexcess-precision
+                    -optc-O3 -optc-ffast-math -optc-march=native -rtsopts
   --ghc-prof-options: -fprof-auto
   build-depends:    parsec, 
                     process,
@@ -36,6 +37,7 @@ executable secpal
                     directory,
                     mtl,
                     parallel-io,
+                    async,
                     curl,
                     hint
 
@@ -95,6 +97,7 @@ executable tests
                     filepath,
                     hint,
                     directory,
+                    parallel-io,
                     curl,
                     transformers
 
