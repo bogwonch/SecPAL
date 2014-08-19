@@ -2,13 +2,12 @@ module Logic.General.ConstraintEvaluation where
 
 import Data.Char
 import Logic.General.Constraints
+import Logic.General.ConstraintFunctions
 import Logic.General.Parser
 import Logic.General.Pretty
 import Logic.SecPAL.Context
 import qualified Logic.General.Named as N
-import System.IO
 import Text.Parsec
-import Language.Haskell.Interpreter 
 
 evaluate :: Context -> Ec -> IO Ec
 evaluate ctx v = 
@@ -18,28 +17,14 @@ evaluate ctx v =
 
 
 evaluateFunction :: Context -> Ec -> IO Ec
-evaluateFunction ctx v = do
-  result <- runInterpreter (functionInterpreter ctx v)
-  case result of
-    Left err -> hPutStrLn stderr ("! failed to evaluate function: " ++ show err) >> fail "function evaluation"
-    Right ans  -> return ans
+evaluateFunction = functionInterpreter
 
-
-functionInterpreter :: Context -> Ec -> Interpreter Ec
+functionInterpreter :: Context -> Ec -> IO Ec
 functionInterpreter ctx (Apply f xs) = do
-  -- Load the function code
-  set [ searchPath := [pluginDir ctx] ]
-  let pkg = getPkgName . N.name $ f
-  loadModules [ pluginDir ctx ++ "/" ++ pkg ++ ".hs" ]
-  setTopLevelModules [ pkg ]
-  setImportsQ [("Prelude", Nothing)]
-
-  -- Evaluate the query
-  let expr = "(" ++ N.name f ++ " " ++ unwords (map eShow xs) ++ ") >>= return . show"
-  ans <- interpret expr (as :: IO String)
+  ans <- runConstraint f (map pShow xs)
 
   -- Parse the answer
-  liftIO (ans >>= valueParser ctx (N.name f))
+  valueParser ctx (N.name f) ans
 
 functionInterpreter _ (Entity _) = fail "attempted to interpret entity as a function"
 functionInterpreter _ (Value _) = fail "attempted to interpret value as a function"
