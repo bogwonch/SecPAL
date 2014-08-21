@@ -38,6 +38,7 @@ instance Vars Ec where
     vars (Entity e) = vars e
     vars (Apply _ es) = concatMap vars es
     vars (Value _) = []
+    vars Fail{} = []
 
 instance Vars C where
     vars Boolean {} = []

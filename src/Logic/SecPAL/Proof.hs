@@ -8,6 +8,7 @@ import Logic.SecPAL.Context
 import Data.List
 import qualified Logic.SecPAL.Substitutions as S
 
+--import Debug.Trace
 
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
@@ -27,8 +28,8 @@ data Proof a = PStated { conclusion :: (Context, a) }
 
 interferes :: Proof a -> Proof b -> Bool
 a `interferes` b = 
-  let ta = theta . fst . conclusion $ a
-      tb = theta . fst . conclusion $ b
+  let ta = relevantVariables $ a
+      tb = relevantVariables $ b
   in ta `S.interferent` tb
 
 interferent :: [Proof a] -> [Proof b] -> Bool
@@ -38,11 +39,22 @@ interferent xs ys = not.null$ [ (x,y)
                               , x `interferes` y
                               ]
         
+relevantVariables :: Proof b -> [S.Substitution]
+relevantVariables PCanSay{ conclusion=c, action=as } =
+  let vAs = concatMap relevantVariables as
+      vC  = theta . fst $ c
+  in [ x | x <- vAs
+         , y <- vC
+         , S.var x == S.var y
+         ]
+
+relevantVariables x = theta . fst . conclusion $ x
 
 instance (PShow a) => PShow (Proof a) where
   pShow prf = 
     let ac' = ac . fst . conclusion $ prf
-    in "AC := " ++ pShow ac' ++ "\n" ++ pShow' 0 prf
+    --in "AC := " ++ pShow ac' ++ "\n" ++ pShow' 0 prf
+    in pShow' 0 prf
   
 showCtx :: (PShow a, PShow b) => (a, b) -> String
 showCtx (ctx, a) = pShow ctx ++" |= "++pShow a

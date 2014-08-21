@@ -6,6 +6,8 @@ import Logic.SecPAL.Language
 import Logic.General.Pretty
 import Data.Maybe
 
+--import Debug.Trace
+
 data Substitution = Substitute{ var::E, for::E }
   deriving (Eq, Show)
 
@@ -29,6 +31,10 @@ interferent :: [Substitution] -> [Substitution] -> Bool
 interferent xs ys  = not.null$ [ (x,y)
                                | x <- xs
                                , y <- ys
+                               {-, (flip trace) True $ -}
+                                  {-if x`interferes`y-}
+                                    {-then ("??? "++pShow x++" interferes with "++pShow y)-}
+                                    {-else ""-}
                                , x `interferes` y
                                ]
 

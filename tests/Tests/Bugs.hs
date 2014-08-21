@@ -52,5 +52,17 @@ renaming1 =
         , result = test . null $ prf
         }
 
-
-
+canSayInterference :: Test
+canSayInterference =
+  let a0 = makeAssertion "I says U can-say 0 a can(b);"
+      a1 = makeAssertion "U says A can(X);"
+      a2 = makeAssertion "U says A can(Y);"
+      a3 = makeAssertion "I says This Works if A can(X), A can(Y);"
+      q = makeAssertion "I says This Works;"
+      ctx = stdCtx{ ac=AC [a0, a1, a2, a3] }
+      prf = unsafePerformIO $ ctx ||- q
+      pPrf = ppProof prf
+  in
+    Test{ description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+        , result = test . not . null $ prf
+        }

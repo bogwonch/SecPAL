@@ -10,6 +10,7 @@ data F = F { fName :: String }
 data Ec = Entity E
         | Apply F [Ec]
         | Value Value
+        | Fail -- Special value that NEVER evaluates to true
         deriving (Eq,Show,Typeable)
 
 data C = Boolean Bool
@@ -31,3 +32,7 @@ instance Ord Ec where
   compare (Value (Int' a))   (Value (Int' b))   = compare a b
   compare (Value (Float' a)) (Value (Float' b)) = compare a b
   compare a b = error$"Comparing non-comparable things "++show a++" and "++show b
+
+
+hasFailed :: [Ec] -> Bool
+hasFailed = (Fail `elem`)

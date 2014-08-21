@@ -4,6 +4,8 @@ import Logic.General.Entities
 import Logic.General.Constraints
 import Data.List
 
+import Data.Char (isSpace) 
+
 class PShow a where
   pShow :: a -> String
 
@@ -13,6 +15,11 @@ instance PShow a => PShow (Maybe a) where
 
 instance PShow a => PShow [a] where
   pShow xs = "[" ++ intercalate ", " (map pShow xs) ++ "]"
+  --pShow = rstrip .unlines . map pShow
+  --
+
+rstrip :: String -> String
+rstrip = reverse . dropWhile isSpace . reverse
 
 
 instance PShow E where
@@ -26,6 +33,7 @@ instance PShow Ec where
   pShow (Entity e) = pShow e
   pShow (Apply f xs) = pShow f++"("++intercalate ", " (map pShow xs)++")"
   pShow (Value v) = pShow v
+  pShow Fail{} = ":-("
 
 instance PShow C where
   pShow (Boolean True) = "True"

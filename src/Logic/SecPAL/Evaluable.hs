@@ -19,8 +19,8 @@ import Logic.SecPAL.Proof hiding (constraint, delegation)
 import Logic.SecPAL.Substitutions hiding (interferes, interferent)
 import System.Console.ANSI
 import System.Random
-
 import System.IO
+--import Debug.Trace
 
 type Result = (Proof Assertion)
 class Evaluable x where 
@@ -37,20 +37,30 @@ instance Evaluable C where
           (Equals a b) -> do
             a' <- evaluate ctx a
             b' <- evaluate ctx b
-            return [PStated (ctx, c) | a' == b']
+            return $ 
+              if hasFailed [a',b']
+                then []
+                else [PStated (ctx, c) | a' == b']
 
           (LessThan a b) -> do
             a' <- evaluate ctx a
             b' <- evaluate ctx b
-            return [PStated (ctx, c) | a' < b']
+            
+            return $ 
+              if hasFailed [a',b']
+                then []
+                else  [PStated (ctx, c) | a' < b']
 
           (GreaterThan a b) -> do
             a' <- evaluate ctx a
             b' <- evaluate ctx b
-            return [PStated (ctx, c) | a' > b']
+            return $ 
+              if hasFailed [a',b']
+                then []
+                else  [PStated (ctx, c) | a' > b']
 
           (Not c') -> do
-            p <- not.null <$> ctx ||- c'
+            p <- null <$> ctx ||- c'
             return [PStated (ctx, c) | p]
 
           (Conj x y) -> do
@@ -171,6 +181,17 @@ cond' ctx result query =
     let pfs = proofSets ifStatements
 
     (ps, cs) <- unzip <$> proofsWithConstraint ctx pfs c
+    --traceIO ">>> QUERY"
+    --traceIO $ pShow query
+    --traceIO $ ">>> IFS"
+    --traceIO $ pShow ifStatements
+    --traceIO $ ">>> PFS"
+    --traceIO $ pShow pfs
+    --traceIO $ ">>> PS"
+    --traceIO $ pShow ps
+    --traceIO $ ">>> CS"
+    --traceIO $ pShow cs
+    --traceIO $ "<<< END"
 
     return $
       makeCond 
@@ -179,7 +200,7 @@ cond' ctx result query =
         cs
         (flat . fact . says $ query)
 
-proofSets :: [[Proof b]] -> [[Proof b]]
+proofSets :: PShow b => [[Proof b]] -> [[Proof b]]
 proofSets [] = []
 proofSets [x] = map (:[]) x 
 proofSets (ps:qs) = 
@@ -213,7 +234,8 @@ cond ctx result query =
       delta         = fromJust $ result ==? query'
       renamedQuery  = subAll query delta
       renamedResult = subAll result delta
-  in 
+  in do
+      --traceIO $ "!delta " ++ pShow delta
       cond' ctx{theta=delta} renamedResult renamedQuery
   where
     simplify q = 
@@ -256,7 +278,10 @@ canSay ctx result canSayStm =
       delta         = fromMaybe (error "can say statement failed to simplify") pRenaming 
       renamedCSS    = subAll canSayStm delta
       renamedResult = subAll result delta
-  in
+  in do
+    --traceIO $ "$RESULT: " ++ pShow result
+    --traceIO $ "$delta:  " ++ pShow delta
+
     canSay' ctx{theta=delta} renamedResult renamedCSS canSayStm
   where
     simplify q = 

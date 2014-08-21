@@ -56,3 +56,4 @@ main = do
   runTests "Bugs/Infinite-Loop-cansay" [infLoop]
   runTests "Bugs/Infinite-Loop-cond" [infLoop2]
   runTests "Bugs/Renaming-cond" [renaming1]
+  runTests "Bugs/Can-say-interference" [canSayInterference]

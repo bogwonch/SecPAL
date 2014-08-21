@@ -223,15 +223,6 @@ runExistentialQuery ctx q verbose debugging = do
   let a = Q.query q'
   let as = [ (a `S.subAll` s, s) | s <- ss ]
 
-  {- BUG: Actually running this code in parallel is currently broken due to GHC
-   - bug #3373.  Because we fork the GHC API to run constraints we can't
-   - parallelise this code currently.
-   -
-   - FIX: Rewrite constraint code to be static not dynamic
-   - FIX: Do compilation and loading of constraint checking code BEFORE querys
-   -
-   - https://ghc.haskell.org/trac/ghc/ticket/3373
-   -}
   parallel_ $ map (runExistentialQuery' verbose debugging ctx) as
   return ()
 
@@ -239,7 +230,8 @@ runExistentialQuery' :: Bool -> Bool -> Context -> (Assertion, [S.Substitution])
 runExistentialQuery' verbose debugging ctx (a,s) = do
   decision <- runAssertion ctx a verbose debugging
   unless (null decision) $ do
-    putStrLn $ pShow s ++ " ?- " ++ pShow a
-    printResult verbose debugging decision
+    --putStrLn $ pShow s ++ " ?- " ++ pShow a
+    putStrLn $ pShow a
+    --printResult verbose debugging decision
   return ()
 
