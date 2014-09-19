@@ -232,6 +232,7 @@ runExistentialQuery' verbose debugging ctx (a,s) = do
   unless (null decision) $ do
     --putStrLn $ pShow s ++ " ?- " ++ pShow a
     putStrLn $ pShow a
+    when verbose $ (putStrLn . pShow . head) decision
     --printResult verbose debugging decision
   return ()
 
