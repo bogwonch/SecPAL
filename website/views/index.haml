@@ -1,0 +1,133 @@
+!!!
+%html{:lang => "en"}
+  %head
+    %meta{:charset => "utf-8"}/
+    %meta{:name => "viewport", :content => "width=device-width, initial-scale=1"}
+    %title App Search
+    %link{:href => "/bower_components/bootstrap/dist/css/bootstrap.css", :rel => "stylesheet"}
+    %link{:href => "/css/stylesheet.css", :rel => "stylesheet"}
+
+  %body
+    #query
+      .jumbotron
+        %form{:action => "/", :method => "POST"}
+          %input{ :type => "hidden", :id => "search-mode", :name => "search-mode", :value => "#basic" }
+          .container
+            #search-bar
+              .input-group.input-group-lg
+                %span.input-group-btn 
+                  %button.btn.btn-primary{:type => "submit", :value => "Submit"}
+                    %span.glyphicon.glyphicon-search
+                %input.form-control{:type => "text", :name => "search", :placeholder => "Search..."}
+
+            / Tabs for basic and advarnced modes
+            #mode-tabs
+              %ul.nav.nav-tabs{ :role => "tablist" }
+                %li.active
+                  %a{:href => "#basic", :role => "tab", "data-toggle" => "tab"} Basic
+                %li
+                  %a{:href => "#advanced", :role => "tab", "data-toggle" => "tab"} Advanced
+
+            .tab-content
+
+              / Basic mode: everythings a clicky button
+              .tab-pane.active.in.fade{ :id => "basic" }
+                .permission-group
+                  %h2 The app should be able to...
+                  .permission
+                    %p 
+                      %span.glyphicon.glyphicon-cloud
+                      Access the internet
+                    .btn-group{"data-toggle" => "buttons"}
+                      %button.btn.btn-success
+                        %input{:type => "radio", :value => "yes", :name => "perm-internet"}
+                        Yes
+                      %button.btn.btn-default.active
+                        %input{:checked => "", :type => "radio", :value => "", :name => "perm-internet"}
+                        Don't care
+                      %button.btn.btn-danger
+                        %input{:type => "radio", :value => "no", :name => "perm-internet"}
+                        No
+
+                  .permission
+                    %p.permission-label
+                      %span.glyphicon.glyphicon-floppy-save
+                      Write to your storage
+                    .btn-group{"data-toggle" => "buttons"}
+                      %button.btn.btn-success
+                        %input{:type => "radio", :value => "yes", :name => "perm-storage"}
+                        Yes
+                      %button.btn.btn-default.active
+                        %input{:checked => "", :type => "radio", :value => "", :name => "perm-storage"}
+                        Don't care
+                      %button.btn.btn-danger
+                        %input{:type => "radio", :value => "no", :name => "perm-storage"}
+                        No
+
+                  .permission
+                    %p 
+                      %span.glyphicon.glyphicon-credit-card
+                      Spend money
+                    .btn-group{"data-toggle" => "buttons"}
+                      %button.btn.btn-success
+                        %input{:type => "radio", :value => "yes", :name => "perm-iap"}
+                        Yes
+                      %button.btn.btn-default.active
+                        %input{:checked => "", :type => "radio", :value => "", :name => "perm-iap"}
+                        Don't care
+                      %button.btn.btn-danger
+                        %input{:type => "radio", :value => "no", :name => "perm-iap"}
+                        No
+
+                .preference-group
+                  %h2 It should have...
+                  .preference
+                    .form-inline
+                      %p
+                        At least a  
+                        %select.form-control{:name => "review-stars"}
+                          %option{:value => "5"} Five
+                          %option{:value => "4"} Four
+                          %option{:value => "3"} Three
+                          %option{:value => "2"} Two
+                          %option{:value => "1"} One
+                        %span.glyphicon.glyphicon-star
+                        review on
+                        %select.form-control{:name => "review-source"}
+                          %option{:value => "google-play"} Google Play Store
+                          %option{:value => "app-brain"} App Brain
+
+                    .btn-group{"data-toggle" => "buttons"}
+                      %button.btn.btn-success
+                        %input{:type => "radio", :value => "yes", :name => "review"}
+                        Yes
+                      %button.btn.btn-default.active
+                        %input{:checked => "", :type => "radio", :value => "", :name => "review"}
+                        Don't care
+              
+              / Advanced mode: enter your own SecPAL
+              .tab-pane.fade{ :id => "advanced" }
+                %textarea{ :class => "form-control", :rows => 10, :id => "advanced", :name => "advanced" }
+
+    #results
+      .container
+        = yield
+
+    #footer
+
+    %script{:type => "text/javascript", :src => "/bower_components/jquery/dist/jquery.js"}
+    %script{:type => "text/javascript", :src => "/bower_components/bootstrap/dist/js/bootstrap.js"}
+
+    :coffeescript
+      # Enable buttons
+      $(".btn").button()
+    
+      # Say which tab we're on
+      $('a[data-toggle="tab"]').on 'show.bs.tab', (e) ->
+        target = $(e.target).attr('href')
+        $('#search-mode').val(target) # Say how we searched
+        #$('#advanced').val('User says app is-sought-after;')
+        return
+
+      
+

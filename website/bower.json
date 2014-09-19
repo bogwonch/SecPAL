@@ -1,0 +1,7 @@
+{
+  "name": "appSearch",
+  "directory": "public/bower_components",
+  "dependencies": {
+    "bootstrap": "~3.2.0"
+  }
+}
