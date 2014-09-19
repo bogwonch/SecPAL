@@ -1,0 +1,35 @@
+% Simple test of existential queries
+% :for a in [A,B,C,D,E] I says a is-good;
+I says A is-good;
+I says B is-good;
+I says C is-good;
+
+% Simple test of implicit sets
+Bob says apk#TEST is-good;
+
+% more complex test
+Bob says apk#a is-good:
+  confidence(apk#COM.EVERNOTE, apk#a) > 0.8;
+
+% more complex yet
+Bob says apk#COM.EVERNOTE is-installed;
+
+Bob says apk#app is-really-good 
+  if apk#app' is-installed:
+     confidence(apk#app', apk#app) > 0.8;
+
+I says A is-cool if x is-cool, x is-rad;
+
+I says B is-cool;
+I says C is-rad;
+
+I says apk#app is-comic-reader: category(apk#app) = "COMICS";
+
+% Not a great example... only Angry Birds has category ARCADE
+I says apk#app meets(SAFEGAME) if 
+  apk#app hasCategory(ARCADE):
+  hasPermission(apk#app, "android.permission.INTERNET") = False;
+
+I says apk#app hasCategory(ARCADE): category(apk#app) = "ARCADE";
+I says apk#app hasCategory(ARCADE): category(apk#app) = "GAME_MUSIC";
+I says apk#app hasCategory(ARCADE): category(apk#app) = "GAME_SIMULATION";

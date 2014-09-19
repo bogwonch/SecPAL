@@ -1,0 +1,35 @@
+User says app is-installable
+  if app well-reviewed,
+     app not-malware;
+
+User says app meets(FlashlightPolicy)
+  if app is-installable,
+     app has-category(TOOLS),
+     app cannot-access-internet;
+
+User says SKB can-say 0
+  app well-reviewed;
+
+SKB says app well-reviewed:
+  averagePlaystoreReview(app) > 0.8; 
+
+User says SKB can-say 0 app has-category(x);
+
+User says app cannot-access-internet:
+  hasPermission(app, "android.permission.INTERNET") = False;
+
+User says McAfee can-say 0
+  app not-malware;
+
+User says VirusTotal can-say inf
+  app not-malware;
+
+VirusTotal says app not-malware:
+  vtDetectionRate(app) = 0.0;
+
+VirusTotal says McAfee can-say 0 
+  app not-malware;
+
+VirusTotal says F-Secure can-say 0 
+  app not-malware;
+
