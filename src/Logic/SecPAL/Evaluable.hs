@@ -27,7 +27,6 @@ import System.IO
 {- A result is a proof of an assertion -}
 type Result = (Proof Assertion)
 
-
 {- Something is evaluable in a context if it reduces to a series of proofs -}
 class Evaluable x where 
     (||-) :: Context -> x -> IO [Proof x]
@@ -181,7 +180,7 @@ cond' ctx result query =
       whoSays = asserts w
       fs = conditions (says query)
       aSaysFs = map whoSays fs
-      AC theAC = ac ctx
+      AC theAC = getAC ctx
       ac' = AC $ query `delete` theAC -- removes cond infinite loop -- no it doesnt
       ctx' = ctx{theta=[], ac=ac'}
   in do
@@ -269,7 +268,7 @@ canSay' ctx query canSayStm origCanSay =
       de = delegation . verb $ cs
       b = subject cs
       ctx' = ctx{theta=[]}
-      AC theAC = ac ctx
+      AC theAC = getAC ctx
       ac' = AC $ origCanSay `delete` theAC -- to avoid infinite loop
   in if f == f'
        then do
@@ -345,7 +344,7 @@ delegates from to w level =
 
 tryStated :: Context -> Assertion -> IO [Result]
 tryStated ctx a =  
-  let as = filter (isJust . (==? a)) (acs $ ac ctx)
+  let as = filter (isJust . (==? a)) (acs $ getAC ctx)
   in case as of
     [] -> return []
     ps -> return $ map toStated ps
@@ -355,21 +354,21 @@ tryStated ctx a =
 
 tryCond :: Context -> Assertion -> IO [Result]
 tryCond ctx a = 
-    let as = filter (isSpecific a) (acs (ac ctx))
+    let as = filter (isSpecific a) (acs (getAC ctx))
     in do
       candidates <- mapM (cond ctx a) as
       return $ concat candidates
 
 tryCanSay :: Context -> Assertion -> IO [Result]
 tryCanSay ctx a = 
-    let as = filter (isDelegation a) (acs (ac ctx))
+    let as = filter (isDelegation a) (acs (getAC ctx))
     in do
       candidates <- mapM (canSay ctx a) as
       return $ concat candidates
 
 tryCanActAs :: Context -> Assertion -> IO [Result]
 tryCanActAs ctx a = 
-  let as = filter (isRenaming a) (acs $ ac ctx)
+  let as = filter (isRenaming a) (acs $ getAC ctx)
   in do
     candidates <- mapM (canActAs ctx a) as
     return $ concat candidates

@@ -5,9 +5,9 @@ module Logic.SecPAL.Context where
 import Logic.SecPAL.Language
 import Logic.SecPAL.Substitutions
 import Logic.SecPAL.Pretty
-import Logic.General.Pretty
 
 data Context = Context { ac :: AC
+                       , localAC :: AC
                        , d :: D
                        , theta :: [Substitution]
                        , debug :: Bool
@@ -18,6 +18,7 @@ data Context = Context { ac :: AC
 stdCtx :: Context
 stdCtx = Context 
   { ac        = AC []
+  , localAC   = AC []
   , d         = Infinity
   , theta     = []
   , debug     = False
@@ -27,3 +28,10 @@ stdCtx = Context
 instance PShow Context where
   --pShow ctx = "(" ++ pShow (ac ctx) ++ ", " ++ pShow (d ctx) ++ ")"
   pShow ctx = "AC, "++pShow (d ctx)++(if null (theta ctx) then "" else ' ':pShow (theta ctx))
+
+
+getAC :: Context -> AC
+getAC it = 
+  let (AC x) = ac it
+      (AC y) = localAC it
+  in AC $ x ++ y

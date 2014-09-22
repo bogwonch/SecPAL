@@ -48,26 +48,31 @@ post '/' do
 end
 
 def paramsToSecPAL(params)
-  secpal = "User says app is-sought-after"
   ifs = []
   ifs += permsToSecPAL(params)
-
-  if ifs.any?
-    secpal << "\n  if\n"
-    secpal << ifs.join(",\n")
-  end
 
   conds = []
   conds << reviewToSecPAL(params)
   
-  if conds.any?
-    secpal << ":\n"
-    secpal << conds.join(",\n")
+  if ifs.any? or conds.any?
+    secpal = "User says app is-sought-after"
+  
+    if ifs.any?
+      secpal << "\n  if\n"
+      secpal << ifs.join(",\n")
+    end
+
+    if conds.any?
+      secpal << ":\n"
+      secpal << conds.join(",\n")
+    end
+    
+    secpal << ";"
+
+    return [secpal]
+  else
+    return []
   end
-
-  secpal << ";"
-
-  return [secpal]
 end
 
 def permsToSecPAL(params)
