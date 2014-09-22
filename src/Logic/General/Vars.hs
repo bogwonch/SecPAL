@@ -1,3 +1,6 @@
+{-- Extracts the free variables in a part of SecPAL
+ - REFACTOR: Secpal code in secpal directory
+ -}
 module Logic.General.Vars where
 
 import Logic.General.Entities

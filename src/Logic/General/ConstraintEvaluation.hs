@@ -1,3 +1,4 @@
+{-- High level code for evaluating constraints -}
 module Logic.General.ConstraintEvaluation (evaluate) where
 
 import Data.Char

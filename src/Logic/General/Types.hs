@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-- A means of getting the typing annotations from entities -}
 module Logic.General.Types where
 
 import Data.List

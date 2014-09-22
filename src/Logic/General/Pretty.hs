@@ -1,3 +1,5 @@
+{-- Print an object in a manner that the parsed pretty output is the same object
+ -}
 module Logic.General.Pretty where
 
 import Logic.General.Entities

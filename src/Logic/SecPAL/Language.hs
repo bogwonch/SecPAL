@@ -1,3 +1,4 @@
+{-- SecPAL language spec -}
 module Logic.SecPAL.Language where
 
 import Logic.General.Entities

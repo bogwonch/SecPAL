@@ -1,3 +1,4 @@
+{-- Renamings of secpal statements -}
 module Logic.SecPAL.Substitutions where
 
 import Logic.General.Entities

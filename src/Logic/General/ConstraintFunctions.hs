@@ -1,3 +1,4 @@
+{-- Code to evaluate constraint functions -}
 module Logic.General.ConstraintFunctions (runConstraint) where
 
 import Data.List
@@ -9,6 +10,12 @@ import Control.Concurrent.ParallelIO.Global
 import Logic.General.Constraints
 import qualified Logic.General.Types as T
 
+{- Defines what constraints we can evaluate and with what arguments in a very
+ - crap way.
+ - 
+ - TODO: make more generic
+ - TODO: add types to arguments here
+ -}
 runConstraint :: F -> [String] -> IO Ec
 runConstraint f xs = runConstraint' f xs
 

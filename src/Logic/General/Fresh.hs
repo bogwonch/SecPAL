@@ -1,3 +1,6 @@
+{-- Generate fresh variables
+ - POSSIBLY REDUNDANT (used for DatalogC)
+ -}
 module Logic.General.Fresh where
 
 import Control.Applicative

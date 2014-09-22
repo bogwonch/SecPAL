@@ -2,6 +2,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE RankNTypes #-}
+{-- Parser for general things like entities, lists, comments and the like -}
 module Logic.General.Parser where
 
 import Control.Applicative ((<*), (<$>), (*>))

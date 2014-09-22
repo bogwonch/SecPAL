@@ -81,6 +81,18 @@ executable datalogc
                  Logic.DatalogC.Safety
                  Logic.DatalogC.Vars
 
+executable server
+  main-is: SecPALServer.hs
+  hs-source-dirs: src
+  build-depends: base,
+                 parsec,
+                 filepath,
+                 aeson,
+                 directory,
+                 bytestring,
+                 scotty,
+                 text
+
 executable tests
   main-is:          Tests.hs
   hs-source-dirs:   tests, src

@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts, KindSignatures, NoMonomorphismRestriction, RankNTypes #-}
+{-- Defines format of SecPAL queries -}
 module Logic.SecPAL.Query where
 
 import Control.Applicative ((<*), (*>), (<$>))

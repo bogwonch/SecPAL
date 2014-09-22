@@ -1,5 +1,7 @@
 {-# OPTIONS -Wall #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-- Naive evaluation of SecPAL
+ -}
 module Logic.SecPAL.Evaluable where
 
 import Control.Applicative
@@ -22,7 +24,11 @@ import System.Random
 import System.IO
 --import Debug.Trace
 
+{- A result is a proof of an assertion -}
 type Result = (Proof Assertion)
+
+
+{- Something is evaluable in a context if it reduces to a series of proofs -}
 class Evaluable x where 
     (||-) :: Context -> x -> IO [Proof x]
 
@@ -96,6 +102,7 @@ instance Evaluable Assertion where
           makeArray l = newListArray (1,l)
 
 
+{- Try and apply a SecPAL evaluation rule to an assertion in a context -}
 type Strategy = Context -> Assertion -> IO [Result]
 
 statedStrategy :: Strategy
@@ -110,6 +117,7 @@ canSayStrategy = strategy tryCanSay "delegatable"
 canActAsStrategy :: Strategy
 canActAsStrategy = strategy tryCanActAs "renameable"
 
+{- Apply a strategy, if it succeeds give the proof else log the rule failure -}
 strategy :: Strategy
          -> String
          -> Context
@@ -200,6 +208,9 @@ cond' ctx result query =
         cs
         (flat . fact . says $ query)
 
+{- Find sets of proofs where a renaming in one proof does not contradict the
+ - renaming in any of the others
+ -}
 proofSets :: PShow b => [[Proof b]] -> [[Proof b]]
 proofSets [] = []
 proofSets [x] = map (:[]) x 

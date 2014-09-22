@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-- Constraint language structure -}
 module Logic.General.Constraints where
 
 import Logic.General.Entities

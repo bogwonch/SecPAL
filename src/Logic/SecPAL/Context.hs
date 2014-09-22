@@ -1,3 +1,5 @@
+{-- Code defining what is in an assertion context
+ -}
 module Logic.SecPAL.Context where
 
 import Logic.SecPAL.Language

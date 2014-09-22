@@ -1,3 +1,4 @@
+{-- Pretty printing secpal to show the unparsed language -}
 module Logic.SecPAL.Pretty (pShow, PShow) where
 
 import Logic.General.Constraints

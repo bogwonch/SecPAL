@@ -1,3 +1,6 @@
+{-- Gives a default values for constraint types.
+ - May be redundant now
+ -}
 module Logic.SecPAL.Base where
 
 import Logic.SecPAL.Language

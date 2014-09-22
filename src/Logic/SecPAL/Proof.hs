@@ -1,3 +1,4 @@
+{-- Format, and construction of secpal proofs -}
 module Logic.SecPAL.Proof where
 
 import Logic.SecPAL.Language hiding (constraint, delegation)
@@ -9,7 +10,7 @@ import Data.List
 import qualified Logic.SecPAL.Substitutions as S
 
 --import Debug.Trace
-
+{- A proof is the application of a rule and the proof of its conditions -}
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
                      , ifs :: [[Proof Assertion]]

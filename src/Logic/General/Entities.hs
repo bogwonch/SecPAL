@@ -1,3 +1,4 @@
+{-- Variables and constants -}
 module Logic.General.Entities where
 
 import Logic.General.Types

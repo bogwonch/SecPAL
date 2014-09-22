@@ -1,3 +1,4 @@
+{-- SecPAL safety conditions -}
 module Logic.SecPAL.AssertionSafety where
 
 import Logic.General.Entities

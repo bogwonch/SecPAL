@@ -1,3 +1,9 @@
+{-- Translate SecPAL into DatalogC
+ - BROKEN - algorithm in paper is incorrect
+ - UNUSED - we use the naive algorithm
+ -
+ - Candidate for removal
+ -}
 module Logic.SecPAL.DatalogC where
 
 import Control.Applicative

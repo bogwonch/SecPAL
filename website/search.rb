@@ -3,8 +3,11 @@
 require 'sinatra'
 require 'sinatra/reloader'
 require 'haml'
+require 'httparty'
 
 set :haml, :format => :html5
+
+SECPAL_SERVER="http://localhost:2345/"
 
 get '/' do
   haml :index do
@@ -18,12 +21,28 @@ post '/' do
       #   out << "<p>#{k} := #{v}</p>\n"
       # end
       # out << '<p>'
+    secpal = nil
     case params['search-mode']
     when '#basic'
-      out << paramsToSecPAL(params)
+      secpal = paramsToSecPAL(params)
     when '#advanced'
-      out << "<p>Oo advanced mode <emph>get you</emph></p>"
-      out << "<p>#{params['advanced']}</p>"
+      secpal = params['advanced'].split(';')
+      secpal.map! {|v| "#{v};"}
+    end
+      
+    unless secpal.nil?
+      response = HTTParty.post(SECPAL_SERVER, 
+                               body: {localContext: secpal, 
+                                      query:":for apk#app User says apk#app is-sought-after;"
+                                     }.to_json,
+                               headers: { 'Content-Type' => 'application/json',
+                                          'Accept' => 'application/json'
+                                        }
+
+                              ).body
+
+
+      out << "<p>#{response}</p>"
     end
   end
 end
@@ -48,7 +67,7 @@ def paramsToSecPAL(params)
 
   secpal << ";"
 
-  return secpal
+  return [secpal]
 end
 
 def permsToSecPAL(params)
