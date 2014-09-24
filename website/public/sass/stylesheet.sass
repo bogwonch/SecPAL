@@ -1,4 +1,9 @@
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,500,700)
+@import url(http://fonts.googleapis.com/css?family=Roboto+Condensed)
+
+$screen-lg-min: 1200px
+$screen-md-min: 992px
+$screen-sm-min: 768px
 
 body
   font-family: 'Roboto', sans-serif
@@ -45,3 +50,40 @@ textarea
 
     .btn-group
       float: right
+
+#results
+  width: 100%
+  margin: 0 auto
+  text-align: left
+
+  .result
+    font-family: 'Roboto Condensed', sans-serif
+    display: inline-block
+
+    float: none
+    position: relative
+    margin-bottom: 1%
+    margin-left: 1%
+
+    @media (min-width: $screen-sm-min)
+      width: 100%
+    @media (min-width: $screen-md-min)
+      width: 28%
+    @media (min-width: $screen-lg-min)
+      width: 18%
+
+    text-align: center
+  
+    img
+      position: relative
+      top: 0
+      width: 90%
+      text-align: center
+
+    .result-desc
+      position: relative
+      text-align: center
+      bottom: 0
+      width: 100%
+      font-size: large
+      overflow: hidden 

@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
 
-require 'sinatra'
-require 'sinatra/reloader'
 require 'haml'
 require 'httparty'
 require 'httparty/response'
+require 'json'
+require 'nokogiri'
+require 'open-uri'
+require 'sinatra'
+require 'sinatra/reloader'
 
 set :haml, :format => :html5
 
@@ -45,10 +48,51 @@ post '/' do
       unless response.success?
         out << "<h1>uh oh... something went wrong</h1>"
       end
-      # out << "<p>"
-      # out << secpal.to_s
-      out << "<p>#{response.body}</p>"
+      results = JSON.parse(response, symbolize_names: true)
+      results.each do |result|
+        if result[:result] == 'True'
+          apk = (/^User says apk#(.+) is-sought-after\(\);$/.match result[:query])[1].downcase
+
+          uri = "https://play.google.com/store/apps/details?id=#{apk}"
+          img = getImage(apk)
+          out << <<-eof
+          <button class="result btn btn-default">
+            <a href="#{uri}">
+              <img src="#{img}" width="80%" height="80%"/>
+            </a>
+            <div class="result-desc">
+              #{apk} 
+            </div>
+          </button>
+          eof
+
+
+        end
+      end
     end
+    out
+  end
+end
+
+def getImage(apk)
+  if File.exists? "public/img/#{apk}.png"
+    return "/img/#{apk}.png"
+  else
+    fork do
+      uri = "https://play.google.com/store/apps/details?id=#{apk}"
+      begin
+        page = Nokogiri::HTML(open(uri))
+        img = page.css('div.details-info img.cover-image').attribute("src")
+      rescue Exception 
+        return 
+      end
+
+      open("public/img/#{apk}.png", "wb") do |src|
+        src << open(img).read
+      end
+    end
+
+    return "/img/#{apk}.png"
   end
 end
 
