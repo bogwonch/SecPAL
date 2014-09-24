@@ -1,0 +1,9 @@
+I says x is-good if
+  x likes(A),
+  x likes(B);
+
+I says x likes(y) if
+  y is-cool;
+
+I says A is-cool;
+I says B is-cool;

@@ -4,6 +4,7 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'haml'
 require 'httparty'
+require 'httparty/response'
 
 set :haml, :format => :html5
 
@@ -39,10 +40,14 @@ post '/' do
                                           'Accept' => 'application/json'
                                         }
 
-                              ).body
+                              )
 
-
-      out << "<p>#{response}</p>"
+      unless response.success?
+        out << "<h1>uh oh... something went wrong</h1>"
+      end
+      # out << "<p>"
+      # out << secpal.to_s
+      out << "<p>#{response.body}</p>"
     end
   end
 end

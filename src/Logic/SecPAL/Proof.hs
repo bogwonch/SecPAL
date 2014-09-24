@@ -9,7 +9,7 @@ import Logic.SecPAL.Context
 import Data.List
 import qualified Logic.SecPAL.Substitutions as S
 
---import Debug.Trace
+import Debug.Trace
 {- A proof is the application of a rule and the proof of its conditions -}
 data Proof a = PStated { conclusion :: (Context, a) }
              | PCond { conclusion :: (Context, a) 
@@ -31,7 +31,12 @@ interferes :: Proof a -> Proof b -> Bool
 a `interferes` b = 
   let ta = relevantVariables $ a
       tb = relevantVariables $ b
-  in ta `S.interferent` tb
+      result = ta `S.interferent` tb
+  in
+    if result 
+      --then trace ( "@@@ "++pShow ta++" interferes with "++pShow tb ) True
+      then True
+      else False
 
 interferent :: [Proof a] -> [Proof b] -> Bool
 interferent xs ys = not.null$ [ (x,y)

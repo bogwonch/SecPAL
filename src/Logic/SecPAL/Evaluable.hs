@@ -181,7 +181,8 @@ cond' ctx result query =
       fs = conditions (says query)
       aSaysFs = map whoSays fs
       AC theAC = getAC ctx
-      ac' = AC $ query `delete` theAC -- removes cond infinite loop -- no it doesnt
+      --ac' = AC $ query `delete` theAC -- removes cond infinite loop -- no it doesnt
+      ac' = AC theAC
       ctx' = ctx{theta=[], ac=ac'}
   in do
     ifStatements <- mapM (ctx' ||-) aSaysFs

@@ -22,7 +22,7 @@ source-repository head
 executable secpal
   main-is:          SecPAL.hs
   Hs-Source-Dirs:   src
-  ghc-options:      -threaded -fno-warn-unused-do-bind -O2 -fexcess-precision
+  ghc-options:      -threaded -fno-warn-unused-do-bind -fexcess-precision
                     -optc-O3 -optc-ffast-math -optc-march=native -rtsopts
   --ghc-prof-options: -fprof-auto
   build-depends:    parsec, 
@@ -91,7 +91,14 @@ executable server
                  directory,
                  bytestring,
                  scotty,
-                 text
+                 text,
+                 either-unwrap,
+                 random,
+                 ansi-terminal,
+                 parallel-io,
+                 process,
+                 curl,
+                 array
 
 executable tests
   main-is:          Tests.hs

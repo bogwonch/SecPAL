@@ -1,0 +1,17 @@
+% Permissions checking
+User says app has-permission(p):
+  permissionsCheck(app, p) = True;
+
+User says app doesnt-have-permission(p):
+  permissionsCheck(app, p) = False;
+
+%%% HACK
+User says app has-permission("android.permission.INTERNET"):
+  permissionsCheck(app, "android.permission.INTERNET") = True;
+
+User says app doesnt-have-permission("android.permission.WRITE_EXTERNAL_STORAGE"):
+  permissionsCheck(app, "android.permission.WRITE_EXTERNAL_STORAGE") = False;
+
+User says app doesnt-have-permission("com.android.vending.BILLING"):
+  permissionsCheck(app, "com.android.vending.BILLING") = False;
+
