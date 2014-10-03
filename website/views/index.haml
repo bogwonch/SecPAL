@@ -109,6 +109,19 @@
               .tab-pane.fade{ :id => "advanced" }
                 %textarea{ :class => "form-control", :rows => 10, :id => "advanced", :name => "advanced" }
 
+                .btn-group
+                  / Should haves
+                  %button.btn.btn-default.btn-sm.dropdown-toggle{ "data-toggle" => "dropdown" }
+                    Sample policies
+                    %span.caret
+                  %ul.dropdown-menu{ :role => "menu" }
+                    %li
+                      %a{ :href => "#", :id => "adv-no-internet" }
+                        No internet or storage access
+                    %li
+                      %a{ :href => "#", :id => "adv-with-iap" }
+                        Offers in-app purchases
+
     #results
       .container
         = yield
@@ -129,5 +142,22 @@
         #$('#advanced').val('User says app is-sought-after;')
         return
 
+      # Advanced pre-canned policies
+      $('#adv-no-internet').on 'click', (e) ->
+        $('textarea#advanced').val('''
+                           User says app is-sought-after
+                             if app doesnt-have-permission("android.permission.INTERNET"),
+                                app doesnt-have-permission("android.permission.WRITE_EXTERNAL_STORAGE"),
+                                app is-an-app;
+                           ''')
+        return
+
+      $('#adv-with-iap').on 'click', (e) ->
+        $('textarea#advanced').val('''
+                           User says app is-sought-after
+                             if app has-permission("com.android.vending.BILLING"),
+                                app is-an-app;
+                           ''')
+        return
       
 

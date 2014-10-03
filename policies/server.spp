@@ -5,9 +5,64 @@ User says app has-permission(p):
 User says app doesnt-have-permission(p):
   permissionsCheck(app, p) = False;
 
+
+%%% App definitions
+User says apk#CH.SMALLTECH.LEDFLASHLIGHT.FREE is-an-app;
+User says apk#COM.ANDROID.FLASHLIGHT is-an-app;
+User says apk#COM.ANDRONICUS.TORCH is-an-app;
+User says apk#COM.ANDRONICUS.TORCHSCREENONLY is-an-app;
+User says apk#COM.CHEETAH.FLASHLIGHTANDROID is-an-app;
+User says apk#COM.CRAZYSOFTECH.CRAZYFLASHLIGHT is-an-app;
+User says apk#COM.CRAZYSOFTECH.FLASHLIGHT is-an-app;
+User says apk#COM.DEVUNI.FLASHLIGHT is-an-app;
+User says apk#COM.DIANXINOS.FLASHLIGHT.DUPLAY is-an-app;
+User says apk#COM.DISCOLIGHT is-an-app;
+User says apk#COM.FLASHDHSONY is-an-app;
+User says apk#COM.FLASHLIGHT.DH is-an-app;
+User says apk#COM.FLASHLIGHT_SUPER is-an-app;
+User says apk#COM.GAU.GO.LAUNCHEREX.GOWIDGET.FLASHLIGHT is-an-app;
+User says apk#COM.IDMOBILE.FLASHLIGHT is-an-app;
+User says apk#COM.IHANDYSOFT.LEDFLASHLIGHT.MINI is-an-app;
+User says apk#COM.INTELLECTUALFLAME.LEDFLASHLIGHT.WASHER is-an-app;
+User says apk#COM.ISANDROID.ISFLASHLIGHT is-an-app;
+User says apk#COM.JELLY.FLASH is-an-app;
+User says apk#COM.LAMPE.TORCHER.FLASHLIGHT is-an-app;
+User says apk#COM.LOOMATIX.FLASHLIGHT is-an-app;
+User says apk#COM.MOTOROLA.DLIGHT is-an-app;
+User says apk#COM.NIONSOFTWARE.FLASHLIGHT is-an-app;
+User says apk#COM.RFLSNCHZ.LED.FLASHLIGHT.PLUS is-an-app;
+User says apk#COM.RLC.GALAXYS4FLASHLIGHT is-an-app;
+User says apk#COM.RUDDYROOSTER.ANDROID.MEGAFLASHLIGHT is-an-app;
+User says apk#COM.SOCIALNMOBILE.HD.FLASHLIGHT is-an-app;
+User says apk#COM.SURPAX.LEDFLASHLIGHT.PANEL is-an-app;
+User says apk#COM.TESLACOILSW.FLASHLIGHT is-an-app;
+User says apk#COM.TINYPIECE.ANDROID.FL is-an-app;
+User says apk#COM.TORCH.LAMPE.FLASHLIGHT is-an-app;
+User says apk#COM.ZAPHROX.ANDROID.FLASHLIGHT.MACLIGHT is-an-app;
+User says apk#COM.ZENTERTAIN.FLASHLIGHT3 is-an-app;
+User says apk#COM.ZERONEAPPS.FLASHLIGHT is-an-app;
+User says apk#EX.CHINYANG.ANDROID.XSHORTCUT is-an-app;
+User says apk#FLASHLIGHT.LED.CLOCK is-an-app;
+User says apk#GOLDENSHORESTECHNOLOGIES.BRIGHTESTFLASHLIGHT.FREE is-an-app;
+User says apk#KR.SIRA.FLASH is-an-app;
+User says apk#MOBI.THINKCHANGE.ANDROID.TINYAPP.FLASHLIGHT is-an-app;
+User says apk#NET.KRECI.FLASHLIGHT is-an-app;
+User says apk#RFLSNCHZ.NEWLEDFLASHLIGHTPLUS is-an-app;
+User says apk#TORCIA.PLUS is-an-app;
+
 %%% HACK
 User says app has-permission("android.permission.INTERNET"):
   permissionsCheck(app, "android.permission.INTERNET") = True;
+
+User says app has-permission("android.permission.WRITE_EXTERNAL_STORAGE"):
+  permissionsCheck(app, "android.permission.WRITE_EXTERNAL_STORAGE") = True;
+
+User says app has-permission("com.android.vending.BILLING"):
+  permissionsCheck(app, "com.android.vending.BILLING") = True;
+
+
+User says app doesnt-have-permission("android.permission.INTERNET"):
+  permissionsCheck(app, "android.permission.INTERNET") = False;
 
 User says app doesnt-have-permission("android.permission.WRITE_EXTERNAL_STORAGE"):
   permissionsCheck(app, "android.permission.WRITE_EXTERNAL_STORAGE") = False;

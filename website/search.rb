@@ -120,7 +120,7 @@ def paramsToSecPAL(params)
 
     return [secpal]
   else
-    return []
+    return ["User says app is-sought-after if app is-an-app;"]
   end
 end
 
