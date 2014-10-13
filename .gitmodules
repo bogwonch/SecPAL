@@ -1,3 +1,6 @@
 [submodule "doc/vim-secpal"]
 	path = doc/vim-secpal
 	url = git@github.com:bogwonch/vim-secpal.git
+[submodule "servers/cve/vFeed"]
+	path = servers/cve/vFeed
+	url = https://github.com/toolswatch/vFeed.git
