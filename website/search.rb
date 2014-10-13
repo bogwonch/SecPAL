@@ -98,6 +98,7 @@ end
 
 def paramsToSecPAL(params)
   ifs = []
+  ifs += searchToSecPAL(params)
   ifs += permsToSecPAL(params)
 
   conds = []
@@ -121,6 +122,27 @@ def paramsToSecPAL(params)
     return [secpal]
   else
     return ["User says app is-sought-after if app is-an-app;"]
+  end
+end
+
+def searchToSecPAL(params)
+  case params['search']
+  when "angry birds"
+    return ['    app has-category("angry birds")']
+  when "antivirus"
+    return ['    app has-category("antivirus")']
+  when "flashlight"
+    return ['    app has-category("flashlight")']
+  when "secure messaging"
+    return ['    app has-category("secure messaging")']
+  when "password manager"
+    return ['    app has-category("password manager")']
+  when "rss"
+    return ['    app has-category("rss")']
+  when "weight tracker"
+    return ['    app has-category("weight tracker")']
+  else
+    return []
   end
 end
 

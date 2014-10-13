@@ -18,7 +18,15 @@
                 %span.input-group-btn 
                   %button.btn.btn-primary{:type => "submit", :value => "Submit"}
                     %span.glyphicon.glyphicon-search
-                %input.form-control{:type => "text", :name => "search", :placeholder => "Search..."}
+                / %input.form-control{:type => "text", :name => "search", :placeholder => "Search..."}
+                %select.form-control{ :name => "search", :id => "search" }
+                  %option{ :value => "angry birds",       :id => "search", :name => "search" } angry birds
+                  %option{ :value => "antivirus",         :id => "search", :name => "search" } antivirus
+                  %option{ :value => "flashlight",        :id => "search", :name => "search" } flashlight
+                  %option{ :value => "password manager",  :id => "search", :name => "search" } password manager
+                  %option{ :value => "rss",               :id => "search", :name => "search" } rss
+                  %option{ :value => "secure messenging", :id => "search", :name => "search" } secure messenging
+                  %option{ :value => "weight tracker",    :id => "search", :name => "search" } weight tracker
 
             / Tabs for basic and advarnced modes
             #mode-tabs
@@ -130,7 +138,6 @@
 
     %script{:type => "text/javascript", :src => "/bower_components/jquery/dist/jquery.js"}
     %script{:type => "text/javascript", :src => "/bower_components/bootstrap/dist/js/bootstrap.js"}
-
     :coffeescript
       # Enable buttons
       $(".btn").button()

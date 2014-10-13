@@ -46,8 +46,12 @@ Gemfile.lock
 .rvmrc
 
 # Bower components
+/bower_components
 /public/bower_components
 /public/css
 
 # Sass
 .sass-cache
+
+# Cached app logos
+/public/img
