@@ -31,7 +31,7 @@ pVariable = do
   u <- many (char '_')
   n <- lower
   ns <- many pTokenChar
-  let var = if null t then u++n:ns else t++"#"++ u++n:ns
+  let var = n:ns
   _ <- unless (null u) (warning "don't start variables with an underscore")
   return Variable{varName=var, varType=t}
 
@@ -41,7 +41,7 @@ pConstant = do
   u <- many (char '_')
   n <- upper
   ns <- many pTokenChar
-  let var = if null t then u++n:ns else t++"#"++ u++n:ns
+  let var = n:ns
   _ <- unless (null u) (warning "don't start constants with an underscore")
   return Constant{constName=var, constType=t}
 
