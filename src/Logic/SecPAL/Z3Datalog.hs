@@ -3,19 +3,23 @@ module Logic.SecPAL.Z3Datalog (toDatalog,pShow,Rule,Clause) where
 import           Data.List
 import           Data.Maybe
 import           Logic.General.Entities
-import           Logic.SecPAL.Pretty
+import           Logic.General.Named
 import           Logic.SecPAL.AssertionSafety (flat)
+import           Logic.SecPAL.Pretty
 import qualified Logic.SecPAL.Language as SP
 
 -- import           Debug.Trace
 
 {- Datalog format for RULEs and Horn CLAUSEs -}
 data Rule = Rule { predicate :: Clause , body :: [Clause] }
-  deriving (Eq, Show)
+          | Annotation Clause AnnotationKind -- Z3 typing information... mostly
+  deriving (Eq, Show, Ord)
 
 data Clause = Clause { cname :: String , args :: [E] }
-  deriving (Eq, Show)
+  deriving (Ord, Show)
 
+data AnnotationKind = Input | PrintTuples
+  deriving (Eq, Show, Ord)
 
 instance PShow Rule where
   pShow r@Rule{}
@@ -24,6 +28,14 @@ instance PShow Rule where
                       ++ " :- " ++
                       intercalate ", " (map pShow $ body r) 
                       ++ "."
+
+  pShow (Annotation clause kind) =
+    let n = cname clause
+        types = take (length . args $ clause) xs
+    in
+      n ++ "(" ++ intercalate ", " types ++ ") " ++ pShow kind
+    where
+      xs = map (\x -> "x"++show x++" : Z") [0..] 
 
 instance PShow Clause where
   pShow c@Clause{} = cname c 
@@ -34,13 +46,20 @@ instance PShow Clause where
       eShow e@Variable{} = varName e
       eShow e@Constant{} = "\"" ++ constName e ++ "\""
 
+instance PShow AnnotationKind where
+  pShow Input = "input"
+  pShow PrintTuples = "printtuples"
+
+instance Eq Clause where
+  Clause{cname=a} == Clause{cname=b} = a == b
+
 {- Variable and constant delegation depths for use in Datalog -}
 zero, inf :: E
-zero = Constant "0_" "secpal"
-inf  = Constant "inf_" "secpal"
+zero = Constant "0" "secpal"
+inf  = Constant "inf" "secpal"
 
 k ::  E
-k = Variable "k_" "secpal"
+k = Variable "k" "secpal"
 
 {- ExplicitFacts are SecPAL facts with an explicit speaker and delegation depth.
  - This makes the translation to Datalog easier and is step 1 in the translation
@@ -184,5 +203,64 @@ isDelegationDepth x
   | otherwise = error "found a delegation depth that isn't a delegation depth"
 
 {- Conversion of a full AC -}
-toDatalog :: SP.AC -> [Rule]
-toDatalog (SP.AC ac) = concatMap (toRule . toEClaim) ac
+toDatalog :: SP.AC -> String
+toDatalog = unlines . (header ++) . (++ footer) . map pShow . toDatalog'
+
+toDatalog' :: SP.AC -> [Rule]
+toDatalog' (SP.AC ac) =
+  let rules = concatMap (toRule . toEClaim) ac
+      types = rmdups $ typingRules rules
+      ents = entities rules
+  in
+    types ++ rules ++ ents
+
+
+{- Preamble stuff -}
+header :: [String]
+header = 
+  [ "Z 64"  -- I have no idea what this does
+  , ""
+  , "SecPAL_Depth(x : Z) input"
+  , "SecPAL_Entity(x : Z) input"
+  ]
+
+footer :: [String]
+footer =
+  [ "SecPAL_Depth("++name zero++")."
+  , "SecPAL_Depth("++name inf++")."
+  ]
+
+typingRules :: [Rule] -> [Rule]
+typingRules = rmdups . mapMaybe typingRule 
+  where
+    typingRule :: Rule -> Maybe Rule
+    typingRule Rule{predicate=p} = Just $ Annotation p Input
+    typingRule _ = Nothing
+
+entities :: [Rule] -> [Rule]
+entities rs = map entity (rmdups . constants $ rs)
+  where
+    entity :: E -> Rule
+    entity e = Rule{ predicate=Clause{ cname="SecPAL_Entity", args=[e] }, body=[] }
+
+
+rmdups :: (Ord a) => [a] -> [a]
+rmdups = map head . group . sort
+
+{- Expand to Vars too and refactor? -}
+class EntityHolding x where
+  constants :: x -> [E]
+
+instance EntityHolding E where
+  constants x@Constant{} = [x]
+  constants _ = []
+
+instance EntityHolding t => EntityHolding [t] where
+  constants = concatMap constants
+
+instance EntityHolding Clause where
+  constants Clause{ args=xs } = constants xs
+    
+instance EntityHolding Rule where
+  constants r@Rule{} = constants (predicate r) ++ constants (body r)
+  constants _ = []

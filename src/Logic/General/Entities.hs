@@ -5,7 +5,7 @@ import Logic.General.Types
 
 data E = Variable { varName :: String, varType :: String }
        | Constant { constName :: String, constType :: String }
-       deriving (Show)
+       deriving (Show, Ord)
 
 instance Eq E where
     (Variable _ _) == (Constant _ _) = False

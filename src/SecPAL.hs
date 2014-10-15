@@ -105,9 +105,8 @@ main = do
     putStrLn ""
 
   when pdatalog $ do
-    putStrLn "% vim: set ft=prolog:"
     let dl = toDatalog $ AC theAC
-    mapM_ (putStrLn . pShow) dl
+    putStrLn dl
     exitSuccess
 
   unless checking $ do
