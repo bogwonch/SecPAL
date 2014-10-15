@@ -104,7 +104,7 @@ vpToArgs SP.CanSay{ SP.what=f } = factToArgs f
 {-- Translation algorithm --}
 toClause :: ExplicitFact -> Clause
 toClause ExplicitFact{ speaker=s, depth=d, stated=f } =
-  let n = "says_" ++ factToName f
+  let n = "Says_" ++ factToName f
       xs = [s,d] ++ factToArgs f
   in 
     Clause{ cname=n, args=xs }

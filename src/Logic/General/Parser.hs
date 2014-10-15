@@ -16,8 +16,15 @@ import System.IO.Unsafe (unsafePerformIO)
 warning :: forall (m :: * -> *). Monad m => String -> m ()
 warning = (return $!) . unsafePerformIO . hPutStrLn stderr . ("%%% WARNING: "++)
 
+{- Misc characters like '-' or "'" are quite useful for writing code but are
+ - converted internally to an underscore.  This has the unfortunate effect that
+ - app' and app_ are the same thing to SecPAL.
+ -}
+pMisc :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
+pMisc = oneOf "-'" >> return '_'
+
 pTokenChar :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
-pTokenChar = alphaNum <|> oneOf "-._'" <?> "token character"
+pTokenChar = alphaNum <|> pMisc <|> oneOf "_" <?> "token character"
 
 pE :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m E
 pE = try pVariable <|> try pConstant <|> pString <?> "entity"
@@ -50,11 +57,12 @@ pString = (`Constant` []) <$> (char '"' *> many quotedChar <* char '"')
   where quotedChar = try (string "\\\"" >> return '"') <|> noneOf "\""
 
 pComment :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
-pComment = do { char '%' ; manyTill anyChar (char '\n') ; return () } <?> "comment"
+pComment = do { _<-char '%' ; _<-manyTill anyChar (char '\n') ; return () } <?> "comment"
 
 pWs :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
 pWs = void (many $ try pWs')
 
+pWs' :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m ()
 pWs' = pComment <|> void (many1 space) <?> "whitespace"
 
 pListSep :: forall s u (m :: * -> *). Stream s m Char => ParsecT s u m Char
