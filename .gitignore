@@ -4,7 +4,8 @@ cabal-dev
 *.hi
 *.chi
 *.chs.h
-.virthualenv
+.virtualenv
+*.pyc
 .DS_Store
 .*.swp
 .cabal-sandbox

@@ -35,6 +35,8 @@ runConstraint' F{fName="virustotalFlagRate"} [app]
  = virustotalFlagRate app
 runConstraint' F{fName="malwareCheck"} [app,expert] 
  = malwareCheck app expert
+runConstraint' F{fName="cveCount"} [app]
+ = cveCount app
 
 runConstraint' _ _ = fail "Unknown constraint function"
 
@@ -137,3 +139,14 @@ malwareCheck app expert = extraWorkerWhileBlocked $ do
   if "Error:" `isPrefixOf` str
     then fail "arguments"
     else return . Value . String' . read . show $ str
+
+cveCount :: App -> IO Ec
+cveCount app = extraWorkerWhileBlocked $ do
+  app `T.shouldHaveType` T.app
+  let app' = map toLower . T.remove $ app
+  let url = "http://localhost:5005/check"
+            ++ "?package="++app'
+  (_, str) <- curlGetString url []
+  if "Error:" `isPrefixOf` str
+    then fail "arguments"
+    else return . Value . Int' . length . lines $ str
