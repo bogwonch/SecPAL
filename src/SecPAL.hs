@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Applicative ((<$>))
 import Control.Monad hiding (forM_)
 import Control.Concurrent.ParallelIO.Global
 import Data.Either.Unwrap
@@ -14,8 +15,7 @@ import Logic.SecPAL.AssertionSafety
 import Logic.SecPAL.Pretty
 import qualified Logic.SecPAL.Query as Q
 import qualified Logic.SecPAL.Substitutions as S
-import Logic.SecPAL.DatalogC
-import Logic.DatalogC.Pretty()
+import Logic.SecPAL.Z3Datalog
 import System.Console.GetOpt
 import System.Console.Readline
 import System.Environment
@@ -106,7 +106,8 @@ main = do
 
   when pdatalog $ do
     putStrLn "% vim: set ft=prolog:"
-    mapM_ (mapM_ (putStrLn . pShow) . toDatalog) theAC
+    let dl = toDatalog $ AC theAC
+    mapM_ (putStrLn . pShow) dl
     exitSuccess
 
   unless checking $ do
