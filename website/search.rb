@@ -133,7 +133,7 @@ def searchToSecPAL(params)
     return ['    app has-category("antivirus")']
   when "flashlight"
     return ['    app has-category("flashlight")']
-  when "secure messaging"
+  when "secure messenging"
     return ['    app has-category("secure messaging")']
   when "password manager"
     return ['    app has-category("password manager")']
