@@ -3,6 +3,7 @@ module Logic.DatalogC.Pretty (pShow) where
 import Logic.General.Pretty
 import Logic.General.Constraints
 import Logic.DatalogC.Language as D
+import Data.Char
 import Data.List
 
 instance PShow Clause where
@@ -18,7 +19,9 @@ instance PShow Clause where
     in h' ++ b' ++ c' ++ "."
 
 instance PShow Predicate where
-  pShow p = name p ++ arity ++ arguments
+  pShow p = predName p ++ arity ++ arguments
     where
-      arity     = "/" ++ (show . length . args $ p)
+      arity     = "" --"/" ++ (show . length . args $ p)
       arguments = "(" ++ intercalate ", " (map pShow (args p)) ++ ")"
+
+      predName = map toLower . name

@@ -59,7 +59,11 @@ zero = Constant "0" "secpal"
 inf  = Constant "inf" "secpal"
 
 k ::  E
-k = Variable "k" "secpal"
+k = Variable "k_" "secpal"
+
+free_x, free_e :: E
+free_x = Variable "x_" "secpal"
+free_e = Variable "e_" "secpal"
 
 {- ExplicitFacts are SecPAL facts with an explicit speaker and delegation depth.
  - This makes the translation to Datalog easier and is step 1 in the translation
@@ -129,17 +133,48 @@ toClause ExplicitFact{ speaker=s, depth=d, stated=f } =
     Clause{ cname=n, args=xs }
 
 
-toRule :: ExplicitClaim -> [Rule]
+toRule :: ExplicitClaim -> [ExplicitClaim]
 toRule ec
   | isACanSay ec = toRule_cansay ec
-  | isACanActAs ec = error "Not implemented can-act-as yet"
-  | otherwise = toRule_cond ec
+  | otherwise = [ec]
   where 
     isACanSay = not . flat . stated . fact
     isACanActAs x = 
       case SP.verb . stated . fact $ x of
         SP.CanActAs{} -> True
         _ -> False
+
+{- Step 3 from the Datalog translation handles the can-act as statement -}
+step3 :: ExplicitClaim -> ExplicitClaim
+step3 ExplicitClaim{ fact=ExplicitFact{ speaker=a
+                                      , depth=k
+                                      , stated=SP.Fact{ SP.subject=e
+                                                      , SP.verb=verbphrase 
+                                                      }
+                                      }
+                   }
+  = ExplicitClaim{ fact=ExplicitFact{ speaker=a
+                                    , depth=k
+                                    , stated=SP.Fact{ SP.subject=free_x
+                                                    , SP.verb=verbphrase
+                                                    }
+                                    }
+                 , conditions=[ ExplicitFact{ speaker=a
+                                            , depth=k
+                                            , stated=SP.Fact{ SP.subject=free_x
+                                                            , SP.verb=SP.CanActAs{ SP.whom=e }
+                                                            }
+                                            }
+                              , ExplicitFact{ speaker=a
+                                            , depth=k
+                                            , stated=SP.Fact{ SP.subject=e
+                                                            , SP.verb=verbphrase
+                                                            }
+                                            }
+                              ]
+                 }
+
+                   
 
 {- When we translate a cond statement we can convert it pretty much directly
  - into Datalog
@@ -158,7 +193,6 @@ toRule_cond ec =
  - something if we someone else can say it and they do say it. 
  -
  - Plus the delegation depth has to be right...
- -}
 toRule_cansay :: ExplicitClaim -> [Rule]
 toRule_cansay ec = --trace ("toRule_cansay: "++pShow ec) $
   let cansay = toRule_cond ec
@@ -180,7 +214,52 @@ toRule_cansay ec = --trace ("toRule_cansay: "++pShow ec) $
     delegatee = SP.subject . stated . fact
     targetFact = SP.what . SP.verb . stated . fact
     addUCanSay x@Rule{ body=cs } c = x{ body=c:cs }
+-}
 
+toRule_cansay :: ExplicitClaim -> [ExplicitClaim]
+toRule_cansay ec =
+  let step2a = ec
+      ks     = get_ks . stated . fact $ ec
+      a      = speaker . fact $ ec
+      fact'  = map (ExplicitFact a inf) . get_facts . stated . fact $ ec
+      n      = length fact' - 1
+  in step2a : step2b fact' ks 1 n
+  where
+    get_ks SP.Fact{ SP.verb=SP.CanSay{ SP.delegation=d, SP.what=f }} =
+       d : get_ks f
+    
+    get_ks _ = []
+
+    get_facts :: SP.Fact -> [SP.Fact]
+    get_facts f@SP.Fact{ SP.verb=SP.CanSay{ SP.what=f' }}
+      = f : get_facts f'
+    get_facts f = [f]
+
+
+step2b :: [ ExplicitFact ] -> [ SP.D ] -> Int -> Int -> [ ExplicitClaim ]
+step2b fact' k i n 
+  | i == n = return theClaim
+  | otherwise = theClaim : step2b fact' k (i+1) n
+  where 
+    theClaim = 
+      ExplicitClaim
+        { fact = fact' !! i
+        , conditions = [ (fact' !! i){ speaker=free_x
+                                     , depth=d_to_e $ k!!(i-1)
+                                     }
+                       , (fact' !! i){ stated=SP.Fact{ SP.subject=free_x
+                                                     , SP.verb=SP.CanSay{ SP.delegation=k!!(i-1)
+                                                                        , SP.what=stated $ fact'!!i
+                                                                        }
+                                                     }
+                                     }
+                       ]
+        }
+                                     
+
+d_to_e SP.Zero = zero
+d_to_e SP.Infinity = inf
+    
 
 {- The ground facts are simply that all variables in the arguments are actually
  - entities we know about and not unknown unknowns.  The delegation depth k is a
@@ -204,15 +283,27 @@ isDelegationDepth x
 
 {- Conversion of a full AC -}
 toDatalog :: SP.AC -> String
-toDatalog = unlines . (header ++) . (++ footer) . map pShow . toDatalog'
+toDatalog ac = 
+  let (t, r, e) = toDatalog' ac
+      t' = map pShow t 
+      r' = map pShow r
+      e' = map pShow e 
+  in
+  unlines $ header ++ [[]] ++
+            t'     ++ [[]] ++ 
+            r'     ++ [[]] ++
+            e'     ++ [[]] ++ 
+            footer
 
-toDatalog' :: SP.AC -> [Rule]
+toDatalog' :: SP.AC -> ([Rule], [Rule], [Rule])
 toDatalog' (SP.AC ac) =
-  let rules = concatMap (toRule . toEClaim) ac
+  let rules' = concatMap (toRule . toEClaim) ac
+      step3s = map step3 rules'
+      rules = concatMap toRule_cond (rules' ++ step3s)
       types = rmdups $ typingRules rules
       ents = entities rules
   in
-    types ++ rules ++ ents
+    (types, rules, ents)
 
 
 {- Preamble stuff -}
@@ -220,8 +311,6 @@ header :: [String]
 header = 
   [ "Z 64"  -- I have no idea what this does
   , ""
-  , "SecPAL_Depth(x : Z) input"
-  , "SecPAL_Entity(x : Z) input"
   ]
 
 footer :: [String]
@@ -231,11 +320,13 @@ footer =
   ]
 
 typingRules :: [Rule] -> [Rule]
-typingRules = rmdups . mapMaybe typingRule 
+typingRules = rmdups . map typingRule . concatMap allClauses
   where
-    typingRule :: Rule -> Maybe Rule
-    typingRule Rule{predicate=p} = Just $ Annotation p Input
-    typingRule _ = Nothing
+    typingRule :: Clause -> Rule
+    typingRule p = Annotation p Input
+
+    allClauses Rule{ predicate=p, body=bs } = p : bs 
+    allClauses _ = []
 
 entities :: [Rule] -> [Rule]
 entities rs = map entity (rmdups . constants $ rs)

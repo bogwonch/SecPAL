@@ -1,0 +1,4 @@
+A says B can-say inf
+  y can-say 0 
+    C can-read(z)
+      if y can-read(Foo);
