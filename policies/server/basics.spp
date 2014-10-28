@@ -1,0 +1,40 @@
+
+% Permissions checking
+User says app has-permission(p):
+  permissionsCheck(app, p) = True;
+
+User says app doesnt-have-permission(p):
+  permissionsCheck(app, p) = False;
+
+User says PlayStore can-say 0 app has-stars("5");
+User says PlayStore can-say 0 app has-stars("4");
+User says PlayStore can-say 0 app has-stars("3");
+User says PlayStore can-say 0 app has-stars("2");
+User says PlayStore can-say 0 app has-stars("1");
+
+VFeed says app has-issues:
+  cveCount(app) > 0;
+
+VFeed says app doesnt-have-issues:
+  cveCount(app) = 0;
+
+%%% HACK
+User says app has-permission("android.permission.INTERNET"):
+  permissionsCheck(app, "android.permission.INTERNET") = True;
+
+User says app has-permission("android.permission.WRITE_EXTERNAL_STORAGE"):
+  permissionsCheck(app, "android.permission.WRITE_EXTERNAL_STORAGE") = True;
+
+User says app has-permission("com.android.vending.BILLING"):
+  permissionsCheck(app, "com.android.vending.BILLING") = True;
+
+
+User says app doesnt-have-permission("android.permission.INTERNET"):
+  permissionsCheck(app, "android.permission.INTERNET") = False;
+
+User says app doesnt-have-permission("android.permission.WRITE_EXTERNAL_STORAGE"):
+  permissionsCheck(app, "android.permission.WRITE_EXTERNAL_STORAGE") = False;
+
+User says app doesnt-have-permission("com.android.vending.BILLING"):
+  permissionsCheck(app, "com.android.vending.BILLING") = False;
+

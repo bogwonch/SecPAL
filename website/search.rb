@@ -100,9 +100,9 @@ def paramsToSecPAL(params)
   ifs = []
   ifs += searchToSecPAL(params)
   ifs += permsToSecPAL(params)
+  ifs += reviewToSecPAL(params)
 
   conds = []
-  conds << reviewToSecPAL(params)
   
   if ifs.any? or conds.any?
     secpal = "User says app is-sought-after"
@@ -174,21 +174,11 @@ end
 
 def reviewToSecPAL(params)
   if params['review'] == 'yes'
-    case params['review-source']
-    when 'google-play'
-      source = 'GooglePlay'
-    when 'app-brain'
-      source = 'AppBrain'
-    else 
-      return nil
-    end
-
-    score = (params['review-stars'].to_i * 20 - 10) / 100.0
-    
-    return %Q|    ! reviewScore(app, #{source}) < #{score}|
+    score = params['review-stars'].to_i
+    return [%Q|    app has-stars("#{score}")|]
 
   else 
-    return nil
+    return []
   end
 end
 
