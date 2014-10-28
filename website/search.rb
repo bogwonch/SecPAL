@@ -51,7 +51,7 @@ post '/' do
       results = JSON.parse(response, symbolize_names: true)
       results.each do |result|
         if result[:result] == 'True'
-          apk = (/^User says apk#(.+) is-sought-after\(\);$/.match result[:query])[1].downcase
+          apk = (/^User says (.+) is-sought-after\(\);$/.match result[:query])[1]
 
           uri = "https://play.google.com/store/apps/details?id=#{apk}"
           img = getImage(apk)

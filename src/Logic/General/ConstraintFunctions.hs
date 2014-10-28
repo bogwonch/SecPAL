@@ -100,7 +100,7 @@ permissionsCheck :: String
                  -> String
                  -> IO Ec
 permissionsCheck apk permission = extraWorkerWhileBlocked $ do
-  apk `T.shouldHaveType` T.app
+  --apk `T.shouldHaveType` T.app
 
   let app' = T.remove apk
 
