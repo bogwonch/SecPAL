@@ -309,14 +309,14 @@ toDatalog' (SP.AC ac) =
 {- Preamble stuff -}
 header :: [String]
 header = 
-  [ "Z 64"  -- I have no idea what this does
+  [ "Z 64"  -- This is the number of constant symbols used in the program
   , ""
   ]
 
 footer :: [String]
 footer =
-  [ "SecPAL_Depth("++name zero++")."
-  , "SecPAL_Depth("++name inf++")."
+  [ "SecPAL_Depth(\""++name zero++"\")."
+  , "SecPAL_Depth(\""++name inf++"\")."
   ]
 
 typingRules :: [Rule] -> [Rule]
