@@ -8,6 +8,9 @@
     %link{:href => "/css/stylesheet.css", :rel => "stylesheet"}
 
   %body
+    :javascript
+      var setParams = function() {}
+
     #query
       .jumbotron
         %form{:action => "/", :method => "POST"}
@@ -33,8 +36,8 @@
               %ul.nav.nav-tabs{ :role => "tablist" }
                 %li.active
                   %a{:href => "#basic", :role => "tab", "data-toggle" => "tab"} Basic
-                %li
-                  %a{:href => "#advanced", :role => "tab", "data-toggle" => "tab"} Advanced
+                -# %li
+                -#   %a{:href => "#advanced", :role => "tab", "data-toggle" => "tab"} Advanced
 
             .tab-content
 
@@ -139,6 +142,8 @@
     %script{:type => "text/javascript", :src => "/bower_components/jquery/dist/jquery.js"}
     %script{:type => "text/javascript", :src => "/bower_components/bootstrap/dist/js/bootstrap.js"}
     :coffeescript
+      setParams()
+
       # Enable buttons
       $(".btn").button()
     

@@ -31,7 +31,6 @@ post '/' do
       secpal = paramsToSecPAL(params)
     when '#advanced'
       secpal = params['advanced'].split(';')
-      secpal.map! {|v| "#{v};"}
     end
       
     unless secpal.nil?
@@ -48,6 +47,7 @@ post '/' do
       unless response.success?
         out << "<h1>uh oh... something went wrong</h1>"
       end
+      
       results = JSON.parse(response, symbolize_names: true)
       results.each do |result|
         if result[:result] == 'True'
@@ -65,13 +65,95 @@ post '/' do
             </div>
           </button>
           eof
-
-
         end
       end
     end
-    out
+
+    # Make sure settings are reselected
+    out << paramsToJS(params) 
   end
+end
+
+def paramsToJS(params)
+  out = "#{params}"
+  out = '<script type="text/javascript">'
+  out << 'setParams = function() {'
+  params.each do |k,v|
+    case k
+    when 'search' 
+      case v
+      when 'angry birds'
+        out << %q|$('#search').val('angry birds');|
+      when "antivirus"
+        out << %q|$('#search').val('antivirus');|
+      when "flashlight"
+        out << %q|$('#search').val('flashlight');|
+      when "secure messenging"
+        out << %q|$('#search').val('secure messenging');|
+      when "password manager"
+        out << %q|$('#search').val('password manager');|
+      when "rss"
+        out << %q|$('#search').val('rss');|
+      when "weight tracker"
+        out << %q|$('#search').val('weight tracker');|
+      end
+
+    when 'perm-internet'
+      case v
+      when 'yes'
+        out << %q|$('button input:radio[name="perm-internet"][value="yes"]').click();|
+      when 'no'
+        out << %q|$('button input:radio[name="perm-internet"][value="no"]').click();|
+      end
+
+    when 'perm-storage'
+      case v
+      when 'yes'
+        out << %q|$('button input:radio[name="perm-storage"][value="yes"]').click();|
+      when 'no'
+        out << %q|$('button input:radio[name="perm-storage"][value="no"]').click();|
+      end
+
+    when 'perm-iap'
+      case v
+      when 'yes'
+        out << %q|$('button input:radio[name="perm-iap"][value="yes"]').click();|
+      when 'no'
+        out << %q|$('button input:radio[name="perm-iap"][value="no"]').click();|
+      end
+      
+    when 'review'
+      case v
+      when 'yes'
+        out << %q|$('button input:radio[name="review"][value="yes"]').click();|
+      end
+
+    when 'review-stars'
+      case v
+      when '5'
+        out << %q|$('[name="review-stars"]').val(5);|
+      when '4'
+        out << %q|$('[name="review-stars"]').val(4);|
+      when '3'
+        out << %q|$('[name="review-stars"]').val(3);|
+      when '2'
+        out << %q|$('[name="review-stars"]').val(2);|
+      when '1'
+        out << %q|$('[name="review-stars"]').val(1);|
+      end
+
+    when 'search-mode'
+      case v
+      when '#advanced'
+        out << %q|$('[href="#advanced"]').click()|
+        out << %Q|$('textarea#advanced').val('#{URI.escape params['advanced']});|
+
+      end
+    end
+  end
+  out << '}'
+  out << '</script>'
+  return out
 end
 
 def getImage(apk)
