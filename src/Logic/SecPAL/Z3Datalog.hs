@@ -3,6 +3,7 @@ module Logic.SecPAL.Z3Datalog (toDatalog,pShow,Rule,Clause) where
 import           Data.List
 import           Data.Maybe
 import           Logic.General.Entities
+import           Logic.General.Vars
 import           Logic.General.Named
 import           Logic.SecPAL.AssertionSafety (flat)
 import           Logic.SecPAL.Pretty
@@ -17,6 +18,14 @@ data Rule = Rule { predicate :: Clause , body :: [Clause] }
 
 data Clause = Clause { cname :: String , args :: [E] }
   deriving (Ord, Show)
+
+instance Vars Rule where
+  vars r = vars (predicate r) ++ vars (body r)
+  consts r = consts (predicate r) ++ consts (body r)
+
+instance Vars Clause where
+  vars r = vars (args r)
+  consts r = consts (args r)
 
 data AnnotationKind = Input | PrintTuples
   deriving (Eq, Show, Ord)
@@ -285,14 +294,15 @@ isDelegationDepth x
 toDatalog :: SP.AC -> String
 toDatalog ac = 
   let (t, r, e) = toDatalog' ac
+      c' = constants r
       t' = map pShow t 
       r' = map pShow r
       e' = map pShow e 
   in
-  unlines $ header ++ [[]] ++
-            t'     ++ [[]] ++ 
-            r'     ++ [[]] ++
-            e'     ++ [[]] ++ 
+  unlines $ c' ++ [[]] ++
+            t' ++ [[]] ++ 
+            r' ++ [[]] ++
+            e' ++ [[]] ++ 
             footer
 
 toDatalog' :: SP.AC -> ([Rule], [Rule], [Rule])
@@ -300,18 +310,15 @@ toDatalog' (SP.AC ac) =
   let rules' = concatMap (toRule . toEClaim) ac
       step3s = map step3 rules'
       rules = concatMap toRule_cond (rules' ++ step3s)
-      types = rmdups $ typingRules rules
+      types = nub $ typingRules rules
       ents = entities rules
   in
     (types, rules, ents)
 
 
 {- Preamble stuff -}
-header :: [String]
-header = 
-  [ "Z 64"  -- This is the number of constant symbols used in the program
-  , ""
-  ]
+constants :: [Rule] -> [String]
+constants = return . ("Z "++) . show . (+2) . length . nub . consts
 
 footer :: [String]
 footer =
@@ -320,7 +327,7 @@ footer =
   ]
 
 typingRules :: [Rule] -> [Rule]
-typingRules = rmdups . map typingRule . concatMap allClauses
+typingRules = nub . map typingRule . concatMap allClauses
   where
     typingRule :: Clause -> Rule
     typingRule p = Annotation p Input
@@ -329,29 +336,8 @@ typingRules = rmdups . map typingRule . concatMap allClauses
     allClauses _ = []
 
 entities :: [Rule] -> [Rule]
-entities rs = map entity (rmdups . constants $ rs)
+entities rs = map entity (nub . consts $ rs)
   where
     entity :: E -> Rule
     entity e = Rule{ predicate=Clause{ cname="SecPAL_Entity", args=[e] }, body=[] }
 
-
-rmdups :: (Ord a) => [a] -> [a]
-rmdups = map head . group . sort
-
-{- Expand to Vars too and refactor? -}
-class EntityHolding x where
-  constants :: x -> [E]
-
-instance EntityHolding E where
-  constants x@Constant{} = [x]
-  constants _ = []
-
-instance EntityHolding t => EntityHolding [t] where
-  constants = concatMap constants
-
-instance EntityHolding Clause where
-  constants Clause{ args=xs } = constants xs
-    
-instance EntityHolding Rule where
-  constants r@Rule{} = constants (predicate r) ++ constants (body r)
-  constants _ = []
