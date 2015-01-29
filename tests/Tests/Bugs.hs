@@ -66,3 +66,18 @@ canSayInterference =
     Test{ description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
         , result = test . not . null $ prf
         }
+
+justWeird0 :: Test
+justWeird0 = 
+  let a0 = makeAssertion "I says x is-good if x likes(A), x likes(B);"
+      a1 = makeAssertion "I says A likes(y) if y is-cool;"
+      a2 = makeAssertion "I says A is-cool;"
+      a3 = makeAssertion "I says B is-cool;"
+      q = makeAssertion "I says A is-good;"
+      ctx = stdCtx{ ac=AC [a0,a1,a2,a3] }
+      prf = unsafePerformIO $ ctx ||- q
+      pPrf = ppProof prf
+  in
+    Test{ description = pShow ctx ++ " |= " ++ pShow q ++ pPrf
+        , result = test . not . null $ prf
+        }
