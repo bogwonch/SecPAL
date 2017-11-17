@@ -3,6 +3,17 @@ SecPAL
 
 The SecPAL authorization logic ported to Haskell for the App Guarden project at Edinburgh University.
 
+
+# WARNING
+
+**This software is buggy and no longer developed.**
+
+**It was eventually replaced with
+[AppPAL](https://github.com/bogwonch/libAppPAL).** If you're interested in
+SecPAL I'd recommend checking it out. It isn't bug-free but it's generally much
+more reliable.
+
+
 # Building
 
 ~~~{.sh}
